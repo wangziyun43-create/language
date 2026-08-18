@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>读刊 · Economist 阅读器</title>
+<style>
+:root{
+  --ink:#1A1917; --ink-soft:#5C5A54; --ink-faint:#93908A;
+  --paper:#FCFBF8; --desk:#E9E7E0; --rule:#D6D3CA;
+  --rare:#F0DFA4; --rare-mid:#F7EDCF; --figur:#1B6E68; --saved:#A0201A;
+  --serif:Georgia,"Times New Roman","Songti SC","Noto Serif CJK SC","Source Han Serif SC",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--desk);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+
+.top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding:11px 20px;
+  border-bottom:1px solid var(--rule);background:var(--desk);position:sticky;top:0;z-index:20}
+.brand{font-weight:700;letter-spacing:.02em;font-size:15px}
+.brand em{font-style:normal;color:var(--saved)}
+.tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
+.tab{background:none;border:1px solid transparent;padding:5px 10px;font-size:12.5px;
+  color:var(--ink-soft);border-radius:2px}
+.tab[aria-selected="true"]{background:var(--paper);border-color:var(--rule);color:var(--ink);font-weight:600}
+.tab .count{font-size:11px;color:var(--ink-faint);margin-left:4px}
+.tab .due{font-size:11px;color:var(--saved);font-weight:700;margin-left:4px}
+
+/* 文章与侧栏作为一个整体居中 */
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 336px;
+  max-width:1104px;margin:0 auto;min-height:calc(100vh - 48px)}
+.main{padding:24px 20px 90px;min-width:0}
+.side{border-left:1px solid var(--rule);background:var(--desk);padding:20px 18px 60px;
+  position:sticky;top:48px;align-self:start;max-height:calc(100vh - 48px);overflow-y:auto}
+body.noside .wrap{grid-template-columns:minmax(0,1fr);max-width:940px}
+body.noside .side{display:none}
+.view[hidden]{display:none}
+
+h2.h{font-family:var(--serif);font-size:23px;font-weight:400;margin:0 0 3px}
+p.d{font-size:13px;line-height:1.6;color:var(--ink-soft);margin:0 0 18px}
+.field{margin-bottom:14px}
+.lab{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-faint);margin-bottom:6px;font-weight:700}
+input[type=text],input[type=password],textarea,select{width:100%;background:var(--paper);
+  border:1px solid var(--rule);border-radius:2px;padding:10px 12px;font-size:14px}
+textarea{min-height:210px;resize:vertical;font-family:var(--serif);font-size:16px;line-height:1.6}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--figur);outline-offset:-1px;border-color:transparent}
+.go{background:var(--ink);color:var(--paper);border:none;border-radius:2px;padding:11px 20px;
+  font-weight:600;font-size:13px}
+.go:hover{background:var(--saved)}
+.go[disabled]{opacity:.45;cursor:default}
+.ghost{background:none;border:1px solid var(--rule);border-radius:2px;padding:7px 12px;
+  font-size:12.5px;color:var(--ink-soft)}
+.ghost:hover{border-color:var(--ink);color:var(--ink)}
+.ghost[disabled]{opacity:.4;cursor:default}
+.ghost[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stage{max-width:660px}
+
+/* ---------- 首页 ---------- */
+.hero{background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:20px 22px;margin-bottom:14px}
+.mhead{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.mhead .mo{font-family:var(--serif);font-size:24px}
+.mhead .st{font-size:12px;color:var(--ink-faint);margin-left:auto;text-align:right;line-height:1.5}
+.mhead .st b{color:var(--ink);font-size:15px;font-weight:600}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal .wd{font-size:10px;letter-spacing:.06em;text-align:center;color:var(--ink-faint);padding-bottom:3px}
+.cel{position:relative;min-height:44px;border:1px solid var(--rule);border-radius:2px;
+  background:transparent;padding:3px 5px;text-align:left;font-size:11px;color:var(--ink-faint)}
+.cel.off{opacity:.3;cursor:default;border-color:transparent}
+.cel.today{border-color:var(--ink)}
+.cel.sel{outline:2px solid var(--figur);outline-offset:-1px}
+.cel .wc{position:absolute;right:4px;bottom:3px;font-size:11px;font-weight:700;color:var(--saved)}
+.cel .dot{position:absolute;left:5px;bottom:5px;width:14px;height:2.5px;background:var(--figur);border-radius:2px}
+.daybox{border-top:1px solid var(--rule);margin-top:14px;padding-top:12px}
+.daybox h4{font-size:12px;letter-spacing:.06em;color:var(--ink-faint);margin:0 0 8px;font-weight:700}
+.dayart{font-family:var(--serif);font-size:14.5px;line-height:1.5;margin-bottom:5px}
+.dayart button{background:none;border:none;padding:0;color:var(--figur);text-decoration:underline;font-size:12px;margin-left:6px}
+.wlist{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.wtag{font-family:var(--serif);font-size:13px;background:var(--rare-mid);padding:2px 7px;border-radius:2px}
+
+.trend{background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:18px 22px;margin-bottom:14px}
+.trend h3{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faint);
+  margin:0 0 3px;font-weight:700}
+.trend p{font-size:12.5px;color:var(--ink-soft);line-height:1.55;margin:0 0 12px}
+.cta{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cta button{background:var(--paper);border:1px solid var(--rule);border-radius:2px;
+  padding:18px 20px;text-align:left}
+.cta button:hover{border-color:var(--ink)}
+.cta .t{font-family:var(--serif);font-size:19px;display:block;margin-bottom:3px}
+.cta .s{font-size:12px;color:var(--ink-soft)}
+.cta .s b{color:var(--saved)}
+
+/* ---------- 文章 ---------- */
+.bar{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);
+  align-items:center;margin-bottom:14px}
+.chip{display:inline-block;padding:1px 6px;border-radius:2px;font-family:var(--serif);font-size:13px}
+.chip.a{background:var(--rare)}.chip.b{background:var(--rare-mid)}
+.chip.c{border-bottom:1.5px solid var(--figur)}
+.artwrap{background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:30px 36px 40px}
+.arttitle{font-family:var(--serif);font-size:25px;line-height:1.24;margin:0 0 18px;font-weight:400}
+.article{font-family:var(--serif);font-size:18px;line-height:1.7;color:#25231F}
+.article p{margin:0 0 1.05em}
+.w{cursor:pointer;border-radius:2px}
+.w:hover{background:#E4E9E8}
+.w.t2{background:var(--rare-mid)}
+.w.t3{background:var(--rare)}
+.w.fig{border-bottom:1.5px solid var(--figur);position:relative;background:none}
+.w.fig::before,.w.fig::after{content:'';position:absolute;bottom:-1.5px;width:1.5px;height:5px;background:var(--figur)}
+.w.fig::before{left:0}.w.fig::after{right:0}
+.w.fig:hover{background:#DDEAE8}
+.w.sel{outline:2px solid var(--ink);outline-offset:1px}
+.w.saved{box-shadow:inset 0 -3px 0 var(--saved)}
+.s{border-radius:2px}
+body.smode .article .w{pointer-events:none}
+body.smode .s{cursor:pointer}
+body.smode .s:hover{background:#E4E9E8}
+.s.ssel{background:#DDEAE8;outline:1px solid var(--figur)}
+.s.skept{box-shadow:inset 0 -2px 0 var(--figur)}
+
+/* ---------- 侧栏 ---------- */
+.empty{font-size:13px;color:var(--ink-faint);line-height:1.65}
+.insp-word{font-family:var(--serif);font-size:27px;line-height:1.1;margin:0 0 3px}
+.insp-lemma{font-size:12px;color:var(--ink-faint);margin-bottom:12px}
+.insp-tag{display:inline-block;font-size:10.5px;letter-spacing:.07em;padding:2px 7px;
+  border-radius:2px;font-weight:700;margin-bottom:12px}
+.insp-tag.fig{background:var(--figur);color:#fff}
+.insp-tag.t3{background:var(--rare)}
+.insp-tag.t2{background:var(--rare-mid)}
+.insp-tag.t0{background:var(--rule);color:var(--ink-soft)}
+.sent{font-family:var(--serif);font-size:14.5px;line-height:1.6;color:#33302B;background:var(--paper);
+  border-left:2px solid var(--rule);padding:10px 12px;margin-bottom:14px}
+.sent b{background:var(--rare);font-weight:400}
+.zh{font-size:13.5px;line-height:1.65;background:#EDF2F1;border-left:2px solid var(--figur);
+  padding:10px 12px;margin-bottom:12px}
+.tpl{font-family:var(--serif);font-size:13.5px;line-height:1.6;background:#F3F0E7;
+  border:1px dashed var(--rule);padding:10px 12px;margin-bottom:12px;border-radius:2px}
+.sub{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);
+  font-weight:700;margin:0 0 5px}
+.insp textarea{min-height:54px;font-family:var(--sans);font-size:13.5px;line-height:1.5;margin-bottom:11px}
+.hintbox{background:#F3F0E7;border:1px dashed var(--rule);padding:9px 11px;font-size:12.5px;
+  line-height:1.55;color:var(--ink-soft);margin-bottom:12px;border-radius:2px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.save{background:var(--saved);color:#fff;border:none;border-radius:2px;padding:9px 15px;
+  font-weight:600;font-size:12.5px}
+.save:hover{background:#7E1812}
+.save[disabled]{opacity:.45;cursor:default}
+.calib{margin-top:18px;padding-top:13px;border-top:1px solid var(--rule)}
+.seen{font-size:12px;color:var(--figur);font-weight:700;margin-bottom:8px}
+.ctx{font-family:var(--serif);font-size:12.5px;line-height:1.5;color:#4A4741;
+  border-left:2px solid var(--rule);padding-left:9px;margin-bottom:7px}
+.ctx em{font-style:normal;font-family:var(--sans);font-size:10.5px;color:var(--ink-faint);display:block}
+.spk{background:#EDF2F1;border-left:2px solid var(--figur);padding:8px 11px;font-size:13px;
+  line-height:1.5;margin-bottom:12px}
+
+/* ---------- 列表 ---------- */
+.bookhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.bookhead input[type=text]{flex:1;min-width:150px}
+.bookhead select{width:auto;padding:7px 10px;font-size:12.5px}
+.cards{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:16px 18px}
+.card.done{opacity:.5}
+.card h3{font-family:var(--serif);font-size:20px;margin:0 0 2px;font-weight:400}
+.card .meta{font-size:11px;color:var(--ink-faint);margin-bottom:10px}
+.card .def{font-size:13.5px;line-height:1.55;margin-bottom:8px}
+.card .def.blank{color:var(--ink-faint);font-style:italic}
+.card .q{font-family:var(--serif);font-size:13.5px;line-height:1.55;color:#4A4741;
+  border-left:2px solid var(--rule);padding-left:10px;margin-bottom:7px}
+.card .q b{background:var(--rare);font-weight:400}
+.card .q em{font-style:normal;font-family:var(--sans);font-size:10.5px;color:var(--ink-faint);display:block;margin-top:2px}
+.card .use{font-size:12.5px;line-height:1.5;color:var(--ink-soft);margin-bottom:7px}
+.card .use span{color:var(--figur);font-weight:700}
+.card .en{font-family:var(--serif);font-size:16.5px;line-height:1.55;margin:0 0 8px}
+.mini{background:none;border:1px solid var(--rule);border-radius:2px;padding:4px 9px;
+  font-size:11.5px;color:var(--ink-soft)}
+.mini:hover{border-color:var(--ink);color:var(--ink)}
+.mini.danger:hover{border-color:var(--saved);color:var(--saved)}
+.mini[disabled]{opacity:.4;cursor:default}
+.note{font-size:12.5px;color:var(--ink-soft);background:#F3F0E7;border:1px dashed var(--rule);
+  padding:10px 12px;border-radius:2px;line-height:1.55;margin-bottom:14px}
+.note b{color:var(--ink)}
+
+/* ---------- 复习 ---------- */
+.rev{max-width:600px;margin:0 auto}
+.revbar{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;font-size:12px;color:var(--ink-faint)}
+.revcard{background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:30px 28px;text-align:center}
+.cloze{font-family:var(--serif);font-size:18px;line-height:1.7;color:#25231F;text-align:left;margin-bottom:20px}
+.cloze u{text-decoration:none;border-bottom:2px solid var(--saved);padding:0 22px}
+.revword{font-family:var(--serif);font-size:34px;margin:0 0 6px}
+.revdef{font-size:15px;line-height:1.6;margin-bottom:8px}
+.revspk{font-size:13px;color:var(--figur);margin-bottom:14px}
+.revsrc{font-size:11px;color:var(--ink-faint);margin-top:14px}
+.revbtns{display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.big{padding:12px 24px;border-radius:2px;border:1px solid var(--rule);background:var(--paper);font-size:14px}
+.big.yes{background:var(--figur);border-color:var(--figur);color:#fff;font-weight:600}
+.big.no{background:var(--saved);border-color:var(--saved);color:#fff;font-weight:600}
+
+/* ---------- 设置 ---------- */
+.setwrap{max-width:560px}
+.setblock{background:var(--paper);border:1px solid var(--rule);border-radius:2px;padding:18px 20px;margin-bottom:14px}
+.setblock h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);
+  margin:0 0 10px;font-weight:700}
+.setblock p{font-size:12.5px;line-height:1.6;color:var(--ink-soft);margin:8px 0 0}
+label.ck{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;cursor:pointer}
+label.ck input{width:auto;margin-top:2px}
+
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140%);
+  background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:2px;font-size:13px;
+  z-index:80;transition:transform .2s ease;max-width:86vw;line-height:1.5}
+#toast.on{transform:translateX(-50%) translateY(0)}
+.spin{display:inline-block;width:10px;height:10px;border:2px solid var(--ink-faint);
+  border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media (max-width:900px){
+  .wrap,body.noside .wrap{grid-template-columns:minmax(0,1fr);max-width:none}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;border-left:none;border-top:1px solid var(--rule);
+    max-height:66vh;z-index:30;box-shadow:0 -8px 24px rgba(0,0,0,.13);padding:16px 18px 26px;
+    transform:translateY(101%);transition:transform .22s ease}
+  .side.open{transform:translateY(0)}
+  .sheet-close{position:absolute;top:10px;right:14px}
+  .artwrap{padding:20px 18px 28px}
+  .main{padding:16px 13px 30px}
+  .article{font-size:17.5px}
+  .tab{padding:5px 7px;font-size:12px}
+  .cta{grid-template-columns:1fr}
+  .cel{min-height:38px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+:focus-visible{outline:2px solid var(--figur);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">读刊 <em>·</em> Economist</div>
+  <div class="tabs">
+    <button class="tab" id="tabHome" aria-selected="true">首页</button>
+    <button class="tab" id="tabRead" aria-selected="false">阅读</button>
+    <button class="tab" id="tabRev"  aria-selected="false">复习<span class="due" id="cDue"></span></button>
+    <button class="tab" id="tabBook" aria-selected="false">生词本<span class="count" id="cBook">0</span></button>
+    <button class="tab" id="tabSent" aria-selected="false">好句<span class="count" id="cSent">0</span></button>
+    <button class="tab" id="tabHist" aria-selected="false">历史<span class="count" id="cHist">0</span></button>
+    <button class="tab" id="tabSet"  aria-selected="false">设置</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="main">
+
+    <!-- 首页 -->
+    <section class="view" id="viewHome">
+      <div id="justDone"></div>
+      <div class="hero">
+        <div class="mhead">
+          <button class="ghost" id="moPrev">‹</button>
+          <span class="mo" id="moLabel"></span>
+          <button class="ghost" id="moNext">›</button>
+          <span class="st" id="moStats"></span>
+        </div>
+        <div class="cal" id="cal"></div>
+        <div class="daybox" id="dayBox" hidden></div>
+      </div>
+      <div class="trend">
+        <h3>生词率</h3>
+        <p id="trendNote"></p>
+        <div id="trendChart"></div>
+      </div>
+      <div class="cta">
+        <button id="ctaRead"><span class="t">读一篇</span><span class="s">粘贴正文，开始标注</span></button>
+        <button id="ctaRev"><span class="t">复习单词</span><span class="s" id="ctaRevSub"></span></button>
+      </div>
+    </section>
+
+    <!-- 粘贴 -->
+    <section class="view" id="viewInput" hidden>
+      <div class="stage">
+        <h2 class="h">读一篇</h2>
+        <p class="d">标题只用来日后回溯，留空也行。</p>
+        <div class="field">
+          <label class="lab" for="tTitle">文章标题</label>
+          <input type="text" id="tTitle" placeholder="例：China's AI drive threatens the world's largest workforce">
+        </div>
+        <div class="field">
+          <label class="lab" for="tBody">正文</label>
+          <textarea id="tBody" placeholder="从 Economist 复制文章粘贴到这里。"></textarea>
+        </div>
+        <div class="row">
+          <button class="go" id="btnRead">开始阅读</button>
+          <button class="ghost" id="btnSample">载入示例段落</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 文章 -->
+    <section class="view" id="viewArticle" hidden>
+      <div class="bar">
+        <span><span class="chip a">dynamism</span> 生僻</span>
+        <span><span class="chip b">resembling</span> 中等</span>
+        <span><span class="chip c">sputtering</span> 比喻</span>
+        <span style="margin-left:auto"></span>
+        <button class="ghost" id="btnMode" aria-pressed="false">句子模式</button>
+        <button class="ghost" id="btnSwap">换一篇</button>
+        <button class="ghost" id="btnFinish">读完归档</button>
+      </div>
+      <div class="artwrap">
+        <h1 class="arttitle" id="artTitle"></h1>
+        <div class="article" id="artBody"></div>
+      </div>
+    </section>
+
+    <!-- 复习 -->
+    <section class="view" id="viewRev" hidden>
+      <div class="rev">
+        <div class="revbar" id="revBar"></div>
+        <div id="revBody"></div>
+      </div>
+    </section>
+
+    <!-- 生词本 -->
+    <section class="view" id="viewBook" hidden>
+      <div class="bookhead">
+        <input type="text" id="bookSearch" placeholder="搜索单词、释义或原句">
+        <select id="bookFilter">
+          <option value="active">未掌握</option>
+          <option value="all">全部</option>
+          <option value="done">已掌握</option>
+        </select>
+        <button class="ghost" id="btnFill">批量补释义</button>
+        <button class="ghost" id="btnExpJson">导出 JSON</button>
+        <button class="ghost" id="btnExpCsv">导出 CSV</button>
+        <button class="ghost" id="btnImp">导入</button>
+        <input type="file" id="fileImp" accept=".json" hidden>
+      </div>
+      <div id="bookNote" class="note" hidden></div>
+      <div class="cards" id="cardsBook"></div>
+    </section>
+
+    <!-- 好句 -->
+    <section class="view" id="viewSent" hidden>
+      <div class="bookhead">
+        <input type="text" id="sentSearch" placeholder="搜索句子、翻译或句型">
+        <button class="ghost" id="btnExpSent">导出 CSV</button>
+      </div>
+      <div class="cards" id="cardsSent"></div>
+    </section>
+
+    <!-- 历史 -->
+    <section class="view" id="viewHist" hidden>
+      <div class="bookhead">
+        <input type="text" id="histSearch" placeholder="搜索标题或正文">
+        <select id="histFilter">
+          <option value="all">全部</option>
+          <option value="open">在读</option>
+          <option value="done">读完</option>
+        </select>
+        <button class="ghost danger" id="btnClearHist">清空历史</button>
+      </div>
+      <div class="cards" id="cardsHist"></div>
+    </section>
+
+    <!-- 设置 -->
+    <section class="view" id="viewSet" hidden>
+      <div class="setwrap">
+        <h2 class="h">设置</h2>
+        <p class="d">密钥只存在这台设备的浏览器里，不写进文件、不上传。</p>
+        <div class="setblock">
+          <h3>API 密钥</h3>
+          <input type="password" id="fKey" placeholder="sk-ant-... 或其它服务商的密钥">
+          <div class="actions" style="margin-top:10px">
+            <button class="ghost" id="btnSaveKey">保存</button>
+            <button class="ghost" id="btnTest">测试连接</button>
+            <button class="ghost danger" id="btnDropKey">删除密钥</button>
+          </div>
+          <p>没有密钥也能用：高亮、口语对照、生词本、好句、复习、朗读全部离线。只有句子翻译和自动补释义需要联网。</p>
+        </div>
+        <div class="setblock">
+          <h3>服务商</h3>
+          <select id="fVendor">
+            <option value="anthropic">Anthropic（中国大陆无法访问）</option>
+            <option value="deepseek">DeepSeek（国内可用）</option>
+            <option value="custom">自定义 OpenAI 兼容接口</option>
+          </select>
+          <div id="customBox" hidden style="margin-top:10px">
+            <input type="text" id="fBase" placeholder="https://your-endpoint/v1/chat/completions">
+          </div>
+          <select id="fModel" style="margin-top:10px"></select>
+          <p id="vendorNote"></p>
+        </div>
+        <div class="setblock">
+          <h3>自动补释义</h3>
+          <label class="ck"><input type="checkbox" id="fAuto">
+            <span>点开没有释义的词时自动查。省事，但每点一个词花一次钱。关掉就只在生词本里手动批量补。</span></label>
+        </div>
+        <div class="setblock">
+          <h3>数据</h3>
+          <p style="margin-top:0">全部存在浏览器 localStorage 里，清缓存会丢。</p>
+          <div class="actions" style="margin-top:10px">
+            <button class="ghost" id="btnBackup">导出全部备份</button>
+            <button class="ghost danger" id="btnWipe">清空所有数据</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <aside class="side" id="side">
+    <button class="ghost sheet-close" id="btnSheetClose" hidden>关闭</button>
+    <div class="insp" id="insp">
+      <p class="empty">点文章里任何一个词，这里会显示它所在的整句、难度判定、口语里怎么说，以及收藏按钮。</p>
+    </div>
+  </aside>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* 高频词：不标记。约 1900 词。 */
+const COMMON = `a about above accept across act action add address admit adult advice affect afraid after again against age ago agree ahead air all allow almost alone along already also although always among amount and anger angry animal another answer any anyone anything appear apple apply approach area argue arm around arrive art as ask asleep at attack attempt attend attention author available avoid away baby back bad bag ball bank bar base basic be beach bear beat beautiful because become bed before begin behind believe bell belong below beside best better between beyond big bill bird birth bit bite black blame blank blind block blood blow blue board boat body boil bone book boot border bore born borrow boss both bother bottle bottom box boy brain branch brave bread break breakfast breath bridge bright bring broad brother brown brush build burn bus business busy but buy by cake call calm camera camp can cancel cancer candidate cap capital car card care career careful carry case cash cat catch cause ceiling cell centre center century certain chain chair chance change character charge chart cheap check cheese chest chicken chief child choice choose church circle city claim class clean clear clever climb clock close cloth cloud club coach coast coat code coffee cold collect college colour color come comfort command comment common company compare complete computer concern condition confirm connect consider contain continue control cook cool copy corner correct cost could count country couple course court cover cow crash cream create credit crime cross crowd cry cup current cut dance danger dark date daughter day dead deal dear death debate debt decade decide deep degree delay deliver demand deny depend describe design desire desk despite detail develop die diet differ difficult dinner direct dirty discuss disease dish distance divide do doctor dog dollar door double doubt down draw dream dress drink drive drop drug dry due during dust duty each ear early earn earth ease east easy eat edge education effect effort egg eight either else empty end enemy energy engine enjoy enough enter entire equal escape especially even evening event ever every evidence exact example except exchange exist expect expense experience explain express extra eye face fact factor fail fair fall false family famous far farm fashion fast fat father fault favour favor fear feed feel few field fight figure file fill film final find fine finger finish fire firm first fish fit five fix flat floor flow flower fly focus follow food foot for force foreign forest forget form former forward four free fresh friend from front fruit full fun function fund funny future gain game garden gas gate gather general gentle get gift girl give glad glass go goal god gold good govern grade grand grass great green grey gray ground group grow guard guess guest guide gun guy habit hair half hall hand hang happen happy hard hat hate have he head health hear heart heat heavy height hell hello help her here hero hers herself hide high hill him himself hire his history hit hold hole holiday home honest hope horse hospital hot hotel hour house how however huge human hundred hungry hunt hurry hurt husband i ice idea identify if ill image imagine impact important improve in inch include income increase indeed index indicate industry inform inside instead intend interest into introduce invest invite involve iron island issue it item its itself job join joke journey joy judge jump just keep key kick kid kill kind king kiss kitchen knee knife knock know lack lady lake land language large last late laugh law lay lead leaf learn least leave left leg legal lend length less lesson let letter level library lie life lift light like likely limit line link lip list listen little live load local lock long look lose loss lot loud love low luck lunch machine mad magazine mail main major make male man manage many map mark market marry mass master match material matter may maybe me meal mean meaning measure meat media medical meet member memory mention menu message metal method middle might mile milk million mind mine minister minute miss mistake mix model modern moment money month moon moral more morning most mother motor mountain mouth move movie much music must my myself name narrow nation natural nature near nearly necessary neck need neighbour neighbor neither nervous net never new news next nice night nine no noise none nor normal north nose not note nothing notice now number nurse object obtain obvious occur ocean of off offer office officer official often oh oil old on once one only onto open operate opinion oppose option or orange order ordinary organ other our ours ourselves out outside over own pack page pain paint pair palace paper parent park part particular partner party pass past path patient pattern pay peace pen people per percent perfect perform perhaps period permit person phone photo pick picture piece place plan plane plant plastic plate play please pleasure plenty plus pocket point police policy politics poor popular port position possible post pot potato pound pour power practice practise prefer prepare present president press pressure pretty prevent previous price pride primary prime print prison private prize probably problem produce product profit program progress project promise proper protect proud prove provide public pull purchase pure purpose push put quality quarter queen question quick quiet quite race radio rail rain raise range rare rate rather reach read ready real reason receive recent recognise recognize record red reduce refer reflect refuse regard region regular relate release relief remain remember remind remove repeat replace reply report represent request require research respect respond rest result return reveal rich ride right ring rise risk river road rock role roll roof room root round row rule run rush safe sail salary sale salt same sand save say scale scene school science score sea search season seat second secret secretary section secure see seed seek seem select sell send sense sentence separate series serious serve service set settle seven several sex shake shall shape share sharp she sheet shelf shift shine ship shirt shock shoe shoot shop short should shoulder shout show shut sick side sight sign signal silence silver similar simple since sing single sink sir sister sit site situation six size skill skin sky sleep slight slip slow small smart smell smile smoke snow so social society soft soil soldier solve some someone something sometimes son song soon sorry sort soul sound soup source south space speak special speed spend spirit split sport spot spread spring square staff stage stair stand standard star start state station stay steal steel step stick still stock stomach stone stop store storm story straight strange street strength stress stretch strike strong structure student study stuff stupid style subject succeed such sudden suffer sugar suggest suit summer sun supply support suppose sure surface surprise survey survive sweet swim switch system table take talk tall tape task taste tax tea teach team tear technology telephone tell temperature ten tend term terrible test than thank that the their theirs them theme themselves then theory there therefore these they thick thin thing think third thirty this those though thought thousand threat three throat through throw thus ticket tie tight time tiny tip tire title to today together tomorrow tone tongue tonight too tool tooth top total touch tough tour toward town trade tradition traffic train transfer transport travel treat tree trial trip trouble true trust truth try turn twenty twice two type typical ugly uncle under understand union unit unite universe university unless until up upon upper urban us use useful usual value van variety various vast vegetable version very victim victory video view village visit voice volume vote wage wait wake walk wall want war warm warn wash waste watch water wave way we weak wealth weapon wear weather week weight welcome well west wet what when where whether which while white who whole whom whose why wide wife wild will win wind window wine wing winner winter wire wise wish with within without woman wonder wood word work world worry worse worth would wound write wrong yard year yellow yes yesterday yet you young your yours yourself youth`
+.trim().split(/\s+/);
+
+/* 中频词：报刊常见、订阅者基本都认识 → 也不标记。 */
+const COMMON2 = `abandon absolute abstract abuse academic accelerate access accident accompany accomplish account accurate accuse achieve acknowledge acquire adapt adequate adjust administration admire advance advantage advertise advise afford agency agenda agriculture aid aim aircraft alarm alliance alter alternative ambition analyse analyze analysis ancient angle announce annual anticipate anxiety apart apparent appeal appetite applaud appoint appreciate approve approximate architect archive argument arise arrange arrest article artificial aspect assemble assess asset assign assist associate assume assure athlete atmosphere attach attitude attract attribute audience authority auto average awake award aware background badly balance ban band barrier basis battle bay behave belief benefit bet bias bid bind biology blend boast bond bonus boost bound boundary brand breed brief broadcast budget bulk bunch burden bury cabinet calculate campaign candidate capable capacity capture carbon career carve category cattle caution cease celebrate census centre ceremony certificate challenge champion channel chaos characteristic charity chase chemical chip choke chronic circuit circulate cite civil civilian clarify clash classic client climate clinic cluster coal coalition code cognitive coincide collapse colleague collective column combat combine comfortable commercial commission commit committee commodity communicate community compensate compete competent compile complain complex complicate comply component compose compound comprehensive comprise compromise conceal concede conceive concentrate concept conclude concrete conduct confer confess confidence confine conflict confront confuse congress consequence conservative consist constant constitute constrain construct consult consume contact contemporary contest context contract contradict contrary contrast contribute controversy convention converse convert convey convict convince cope core corporate correlate correspond corrupt council counsel counter coup courage craft crash crawl creative creature criteria critic crucial crude crush cuisine cultivate culture curious currency curve custom customer cycle damage data database deadline debut decade decay deceive decline decorate dedicate deem defeat defect defend define definite delegate delete deliberate delicate democracy demonstrate dense department departure depict deploy deposit depress deprive derive descend describe deserve destination destroy detain detect deteriorate determine device devote diagnose dialogue dictate differentiate digital dignity dilemma dimension diminish diplomat disagree disappear disaster discharge discipline disclose discount discourage discover discrimination dismiss disorder display dispose dispute disrupt distinct distinguish distort distribute district disturb diverse document domain domestic dominate donate downturn draft drain drama dramatic drift drought drown dual duration dwell dynamic ecology economic economy edit educate elaborate elderly elect electric electronic element eliminate elite embark embarrass embrace emerge emergency emission emotion emphasis employ empower enable enact encounter encourage endorse endure enforce engage engineer enhance enormous ensure enterprise entertain enthusiasm entitle entity entrepreneur environment episode equip equivalent era erupt essay essential establish estate estimate ethical ethnic evacuate evaluate eventually evolve exaggerate examine exceed excel excess exclude excuse execute executive exempt exercise exert exhaust exhibit expand expect expedition expel experiment expert expire explode exploit explore export expose extend extensive extent external extinct extract extreme fabric facilitate facility faculty fade failure faint fare fatal fate feasible feature federal fee fellow fertile festival fibre fiction fierce finance financial firearm flee fleet flexible flourish fluctuate fluid forecast foreign forge formal format formula forum foster found foundation fraction fragile fragment framework fraud freeze frequency friction fringe frontier frustrate fuel fulfil fulfill fundamental furnish furthermore gadget gallery gamble gap garment gauge gene generate generation generous genetic genuine gesture giant glance glimpse global globe glory govern grab gradual grain grant graph grasp grateful gravity grief grip gross growth guarantee guideline habitat halt handle harbour hardware harm harsh harvest hazard headline heal heir hence herd heritage hesitate hidden highlight hint hire historic hollow honour hook horizon horror host hostile household housing humble humour hybrid hypothesis identical identity ideology ignore illustrate imitate immediate immense immigrant imminent immune implement implication imply import impose impress imprison inability inadequate incentive incidence incident incline incorporate incur indeed independent indication indicator indigenous individual induce indulge industrial inevitable infant infect inflate inflation inflict influence inject injure innovate input inquire insert insight insist inspect inspire install instance instant institute instruct instrument insufficient insult insurance intact integrate intellectual intelligence intense interact interfere interim interior internal interpret interrupt interval intervene intimate intrigue invade invasion inventory invert investigate investment invoke isolate issue journal journalist judgment jurisdiction justify keen kingdom label laboratory labour labor landscape lane lapse launch layer layout lease lecture legislate legitimate leisure lengthy lens liberal liberty licence license lifetime likewise linger linguistic liquid literacy literature litter livestock loan lobby locate logic loop loyal luxury magnitude maintain majority mandate manifest manipulate manner manual manufacture manuscript margin marginal marine marital martial mature maximum meanwhile mechanic mechanism medieval mediocre medium melt mental mercy mere merge merit metaphor migrate military militant mimic mineral minimal minimum minor minority mirror missile mission mobile mobilise mode moderate modest modify module moist molecule momentum monitor monopoly monument mood morale mortgage motion motivate mould mount mundane municipal mutual myth namely narrative navigate negative neglect negotiate nerve neutral niche nominate norm notable notion notorious novel nuclear nutrient obesity objective obligation observe obstacle occasion occupation occupy odd offence offend offset offspring omit ongoing onset opponent opportunity oppress optimal optimism orbit orchestra ordeal organise organize orient origin outbreak outcome outlet outline outlook output outrage outstanding overall overcome overhaul overlap overlook oversee overwhelm owe ownership oxygen pace panel panic parade parallel parameter parliament partial participate passage passenger passion passive patent patrol patron peculiar peer penalty pending pension perceive perception permanent persist perspective persuade pest petition phase phenomenon philosophy physical physician pile pill pilot pioneer pipeline pistol pitch pity plague plea plead pledge plot plunge poet poison polish poll pollute populate portion portrait portray pose possess postpone potential poverty precede precise predator predict predominant preference pregnant prejudice preliminary premium prescribe presence preserve prestige presumably pretend prevalence prey principal principle prior priority prisoner privilege probable probe procedure proceed process proclaim procure profession professor profile prohibit prominent prompt pronounce proof propaganda property proportion proposal propose prosecute prospect prosper protest protocol prototype province provoke psychology publication publish punish pupil pursue puzzle qualify quest queue quota quote racial radiation radical rally random ratio rational react realise realize realm reap rebel rebuild recall recede recession recipe recipient reciprocal reckon reconcile recover recruit recur redundant reform refuge refund regime register regime regime regret regulate rehabilitate rehearse reign reinforce reject rejoice relative relax relevant reliable reluctant remarkable remedy renew renovate rent repair repay repertoire replicate reputation rescue resemble reserve reside residue resign resist resolve resort resource restore restrain restrict resume retail retain retire retreat retrieve revenue reverse revert review revise revive revolt revolution reward rhythm rid ridge rigid rival roam roast robot rot rotate rough route routine royal rubber rubbish rural sacred sacrifice sake sanitary satellite satisfy saturate scandal scarce scatter schedule scheme scholar scope scramble scrap scratch screen sculpture seal secondary sector secular segment seize seldom senate senior sensation sensible sensitive sentiment sequence sergeant session severe shade shadow shallow shed shelter shield shortage shrink sibling siege signature significant silk simulate simultaneous sincere skeleton sketch slam slave slice slide slogan slope slot smash snap soar sociology solar sole solicit solid solidarity solution somewhat sophisticated sour sovereign span spare spark spatial spectrum speculate sphere spike spin spine spiral spite splash sponsor spontaneous spouse spray sprint spy stability stable stack stadium stain stake stance staple startle statistic statue status statute steady steer stem stereotype stern sticky stiff stigma stimulate sting stir strain strand strap strategy stray streak stream strengthen strict strip stroke stroll structural struggle stumble stun subject submit subscribe subsequent substance substantial substitute subtle suburb succession sufficient suicide suite summarise summit summon superb superficial superior supervise supplement suppress supreme surge surgery surname surpass surplus surrender surround suspect suspend suspicion sustain swallow swap sway sweep swell swift symbol sympathy symptom syndrome synthesis tackle tactic tag tailor talent tangle target tariff tease technique tedious telescope temporary tempt tenant tender tension tenure terminal terminate terrain territory testify testimony texture theft theoretical therapy thesis thorough threaten thrill thrive tide tighten timber timely toll tolerate token toll topic torch torture toxic trace track tract trail trait transaction transcend transform transit transition translate transmit transparent trap trauma tread treasure treaty tremble tremendous trend tribe tribunal tribute trigger trim triple triumph trivial troop tropical trump trunk tuition tumble tunnel turmoil turnout twist ultimate unanimous uncertain undergo undertake undo uneasy unemployment unfair unfold uniform unify unique universal unlikely unload unrest unveil update upgrade uphold upset urge urgent usage utility utilise utilize utter vaccine vague vain valid vanish variable vary vehicle veil vein venture venue verbal verdict verify versatile vessel veteran veto viable vibrant vicious vigour violate violence virtual virtue virus visible vision visual vital vivid vocal vocation void volatile voluntary volunteer vulnerable wander ward warehouse warrant warrior wary wax weave wedge weird welfare whatsoever whereas whereby whilst whim whisper wholesale widespread widow width wield willing wipe withdraw witness workforce workshop worship worthwhile wrap wreck yield zone`
+.trim().split(/\s+/);
+
+/* 学术／新闻高阶词：始终标记（t3）。 */
+const HARD = `abate aberration abhor abstruse accede acquiesce acrimony acumen adamant adjunct admonish adroit adumbrate advocacy aegis affluence aggrandise aggregate alacrity albeit alienate allocate allude altruism ambivalent ameliorate amenable amorphous anachronism analogous anathema anomaly antagonise antipathy apathy aplomb apposite apprise arbitrary arcane archaic ardent arduous articulate ascendancy ascetic aspersion assiduous assuage astute attenuate audacity augment auspicious austerity autarky autonomy avarice aversion banal behest belie bellicose belligerent benign bequeath bereft bespoke bifurcate bolster bombast bourgeois bravado brevity bureaucracy burgeon buttress cadre cajole callous canonical capacious capitulate capricious cartel castigate catalyst caucus caustic cavalier censure cerebral chagrin charlatan chasten chicanery churlish circumspect circumvent clandestine coalesce coerce cogent cohort collateral collusion commensurate commodity complacent complicit conciliatory concomitant condone confluence conflate congenial conjecture connote consensus consign consolidate conspicuous constituency construe contingent contrite contrive conundrum convivial copious corollary corroborate coterie covert cull culpable cumulative cursory cynical dearth debacle debase decorum defer deference deficit deflation deleterious delineate demagogue demographic denigrate denizen deprecate deregulate derivative derogatory desultory detente deterrent detrimental devolve dexterity diaspora dichotomy didactic diffident dilettante diminution disaffection disavow discerning discourse disparage disparate disparity dissemble disseminate dissent dissident dissonance divergent divest doctrinaire dogma dossier dubious duplicity dynamism ebullient echelon eclectic edifice efficacy egalitarian egregious elicit elucidate elusive emaciate embargo embellish emblematic eminent empirical emulate encumber endemic enervate enfranchise engender enigmatic enmity ennui entrench enumerate ephemeral epitome equanimity equitable equivocal erode erroneous erudite eschew esoteric espouse ethos euphemism evanescent exacerbate exacting exculpate exemplary exhort exigency exonerate expedient expiate explicit expropriate extant extol extraneous extrapolate extricate exuberant facile faction fastidious fatuous fealty feasible felicitous fervent fetter fiat fiscal flagrant fledgling florid foment forbearance forestall fortuitous fractious franchise fraught frugal fulminate furtive futile galvanise garner garrulous germane gerrymander glut grandiose gratuitous gregarious guile hackneyed halcyon harangue harbinger hegemony heresy heterodox hiatus hierarchy homogeneous hubris hyperbole iconoclast idiosyncratic ignominy illicit immutable impasse impecunious impede imperative imperious impervious implacable implausible implicit importune impugn inadvertent inane inaugurate incendiary incessant inchoate incipient incisive incongruous incontrovertible incumbent indefatigable indelible indicative indict indigenous indigent indolent indubitable ineffable ineluctable inept inequity inexorable infer infirmity ingenuous inherent inimical iniquity innocuous innuendo inordinate inscrutable insidious insipid insolvent instigate insular insurgent integral interlocutor interminable intractable intransigent intrepid inundate invective inveterate invidious irascible irrevocable itinerant jettison jingoism judicious juncture junta laconic lambast largesse latent laudable lax legacy lethargy leverage liability liaison litany litigate lucid lucrative ludicrous machination magnanimous malaise malfeasance malign mandate manifest maverick mediate mendacious mercurial meritocracy meticulous milieu mitigate modicum mollify monetary moribund munificent myriad nadir nascent nebulous nefarious negligible nepotism nomenclature nominal nonchalant normative notwithstanding nuance obdurate obfuscate obsequious obsolete obstinate obtuse odious oligarchy ominous onerous opaque opprobrium ossify ostensible ostentatious ostracise paltry panacea paradigm paradox parity parochial parsimony partisan patronage paucity pecuniary pedantic pejorative penchant penury perennial perfunctory peripheral pernicious perpetuate perquisite persona pertinent perturb pervasive petulant philanthropy pique pittance placate plaintive platitude plausible plebiscite plethora plutocracy polarise polemic ponderous portend posit posterity postulate pragmatic precarious precedent preclude predicament predilection preeminent preempt premise prerogative prescient prevail prevaricate probity proclivity prodigious profligate profound proliferate prolific promulgate propensity propitious proponent proscribe protectionism protracted provenance provisional proximity prudent puerile pugnacious punitive purport putative quagmire quandary quell querulous quiescent quintessential quixotic quorum ramification rancour rapacious rapprochement ratify raucous recalcitrant recant recondite recrimination recuse redolent redress referendum refractory refute regressive reiterate relegate relinquish remiss remit remuneration renege repatriate repeal replete reprehensible reprisal reproach repudiate requisite rescind resilient resolute resonant respite restive retaliate reticent retrench retrospect reverence rhetoric rife rigour riposte robust rudimentary ruminate sagacious salient salutary sanction sanctimonious sanguine sardonic scarcity scathing scrupulous scrutiny secular sedition seminal sequester serendipity serialise serialize servile simulacrum sinecure singular skew slander sobriety solvency somnolent sophistry sovereign specious spurious squander stagnant staid stalwart stasis staunch stipulate stringent strident subjugate subordinate subpoena subsidy subsume subterfuge subvert succinct sundry supersede supine supplant surfeit surreptitious surrogate sycophant tacit tangible tantamount tariff tautology temerity tenable tenacious tendentious tenet tenuous tepid terse thwart torpid tortuous tout tractable transient trenchant trepidation truculent truncate turpitude tutelage ubiquitous umbrage unassailable uncanny unctuous underpin undermine unequivocal unfettered unilateral unmitigated unprecedented unscrupulous untenable unwieldy usurp vacillate vacuous vagary vanguard vapid variance vehement venal veneer venerable veracity verbose vestige vexation viable vicarious vicissitude vigilant vilify vindicate virulent visceral vitiate vitriol vociferous volatile voluminous voracious warrant wary welter whet winnow wrest zeal zenith`
+.trim().split(/\s+/);
+
+/* 比喻／习语：常见词但在语境里不是字面义。key 为小写短语。 */
+const FIG = {
+  "sputtering":["（引擎）噗噗作响、快要熄火 → 形容经济／计划失去动力、举步维艰","The startup's growth has been sputtering since spring."],
+  "bright spot":["亮点；黯淡局面中唯一乐观的部分","Dessert was the one bright spot of that dinner."],
+  "hub":["车轮轴心 → 中心、集散地、枢纽","Amsterdam is a hub for cheap flights."],
+  "taken over":["占领、席卷（不是「接管公司」的字面义）","Cat videos have taken over my feed."],
+  "take over":["占领、席卷；接管","Tourists take over the town every August."],
+  "back and forth":["来回地；踱来踱去","We emailed back and forth for a week."],
+  "one in two":["二分之一的人／每两人中就有一人","One in two students skips breakfast."],
+  "one in three":["三分之一的人","One in three flights was delayed."],
+  "grew into":["发展成为、长成（规模上的）","Her side project grew into a real business."],
+  "grow into":["发展成为","This will grow into something big."],
+  "phone screens":["手机屏幕 → 借指手机上的注意力／时间","Ads are fighting for phone screens."],
+  "a hub for":["……的集聚地","Berlin is a hub for techno."],
+  "headwind":["逆风 → 阻力、不利因素","Rising rents are a headwind for shops."],
+  "tailwind":["顺风 → 助力、有利因素","Cheap oil was a tailwind for airlines."],
+  "soft landing":["软着陆：经济放缓但未衰退","Everyone is hoping for a soft landing."],
+  "green shoots":["绿芽 → 复苏的早期迹象","There are green shoots in the job market."],
+  "bottom line":["底线；最关键的一点；净利润","The bottom line is we can't afford it."],
+  "across the board":["全面地、无一例外","Prices rose across the board."],
+  "in the wake of":["紧随……之后（多指坏事）","Shops closed in the wake of the flood."],
+  "at odds with":["与……不一致、相矛盾","His story is at odds with the video."],
+  "on the back of":["借助于、在……的推动下","Sales rose on the back of a viral clip."],
+  "knock-on":["连锁的、间接引发的","There were knock-on delays all day."],
+  "flesh out":["充实、把细节补全","Can you flesh out the plan a bit?"],
+  "rein in":["勒住马缰 → 控制、约束","We need to rein in spending."],
+  "shore up":["支撑、加固","They shored up the old bridge."],
+  "roll out":["推出、铺开","They rolled out the new app quietly."],
+  "crack down":["严厉打击","Police cracked down on scooters."],
+  "double down":["加倍投入、变本加厉","He doubled down on the claim."],
+  "spill over":["蔓延、外溢","The argument spilled over into work."],
+  "weigh on":["拖累、施压于","Debt weighs on young buyers."],
+  "hollow out":["使空心化、抽空","Rents hollowed out the high street."],
+  "level playing field":["公平竞争的环境","Small firms want a level playing field."],
+  "red tape":["繁琐的官僚程序","Visa red tape cost us a month."],
+  "brain drain":["人才外流","The brain drain hit local hospitals."],
+  "boom":["繁荣、激增","There's a boom in second-hand bikes."],
+  "sluggish":["迟缓的、萎靡的","Sales were sluggish all winter."],
+  "buoyant":["（市场）活跃向上的","The rental market stays buoyant."],
+  "fuel":["燃料 → 助长、加剧","Cheap credit fuelled the spending."],
+  "curb":["路缘 → 抑制、约束","They curbed late-night noise."],
+  "dampen":["弄湿 → 抑制、使降温","Rain dampened the mood."],
+  "erode":["侵蚀 → 逐渐削弱","Inflation erodes savings."],
+  "cushion":["垫子 → 缓冲、减轻冲击","Savings cushion a job loss."],
+  "windfall":["被风吹落的果实 → 意外之财","The refund was a windfall."],
+  "ceiling":["天花板 → 上限","There's a ceiling on how much you can pay in."],
+  "floor":["地板 → 下限、最低标准","The law sets a floor on wages."],
+  "watershed":["分水岭 → 转折点","2020 was a watershed for remote work."],
+  "landmark":["地标 → 里程碑式的","It was a landmark ruling."],
+  "flagship":["旗舰 → 最重要的、招牌的","This is their flagship store."],
+  "pipeline":["管道 → 在筹备中的一系列项目","Two more films are in the pipeline."],
+  "footprint":["脚印 → 覆盖范围、（碳）足迹","They cut their carbon footprint."],
+  "appetite":["食欲 → 意愿、兴趣","There's little appetite for another meeting."],
+  "sentiment":["情绪、看法（尤指市场／民众）","Consumer sentiment is improving."],
+  "momentum":["动量 → 势头","The campaign lost momentum."],
+  "leverage":["杠杆 → 举债经营；利用优势","They used their size as leverage."],
+  "exposure":["暴露 → 风险敞口；曝光度","The bank cut its exposure to property."],
+  "resilience":["韧性、抗压恢复能力","The city showed real resilience."],
+  "backlash":["反冲 → 强烈反对","There was a backlash over the price rise."],
+  "clout":["影响力、势力","Big buyers have clout with suppliers."],
+  "spree":["（不加节制的）一阵狂做","She went on a shopping spree."],
+  "glut":["供过于求、过剩","There's a glut of used cars."],
+  "squeeze":["挤压 → 紧缩、拮据","Households feel the squeeze."],
+  "shake-up":["大幅改组、洗牌","A shake-up is coming in management."],
+  "gloom":["阴郁 → 悲观气氛","Gloom hangs over the industry."],
+  "spat":["小口角、争执","A spat broke out over parking."],
+  "tepid":["温热 → 不温不火、反应冷淡","The response was tepid."],
+  "lacklustre":["无光彩的 → 平淡无起色的","Another lacklustre quarter."],
+  "lackluster":["无光彩的 → 平淡无起色的","Another lackluster quarter."]
+};
+const FIG_PHRASES = Object.keys(FIG).filter(k=>k.includes(" "))
+  .sort((a,b)=>b.split(" ").length - a.split(" ").length);
+
+/* 高阶后缀：不在高频表里、且带这些后缀 → 判为 t3，否则 t2 */
+const HARD_SUF = /(ism|ity|ous|ate|ise|ize|ation|ition|ence|ance|ancy|ency|itude|escent|aceous|ferous|ocracy|ology|arian)$/;
+
+
+
+/* 书面语 → 口语里会怎么说。key 为词形还原后的小写。 */
+const SPOKEN = {
+  "exacerbate":"make it worse / make things worse",
+  "ameliorate":"make it better",
+  "mitigate":"soften it / take the edge off",
+  "alleviate":"ease / help with",
+  "utilise":"use", "utilize":"use",
+  "commence":"start / kick off",
+  "terminate":"end / stop / pull the plug on",
+  "purchase":"buy / pick up",
+  "endeavour":"try / have a go at",
+  "assist":"help / give a hand",
+  "obtain":"get / get hold of",
+  "acquire":"get / pick up",
+  "require":"need",
+  "sufficient":"enough",
+  "insufficient":"not enough",
+  "demonstrate":"show",
+  "component":"part / piece",
+  "approximately":"about / roughly / around",
+  "subsequently":"later / after that / then",
+  "consequently":"so / that's why",
+  "nevertheless":"still / even so / but",
+  "nonetheless":"still / all the same",
+  "furthermore":"also / plus / on top of that",
+  "moreover":"plus / and another thing",
+  "notwithstanding":"even so / despite that",
+  "prior":"before", "prior to":"before",
+  "elucidate":"explain / spell it out",
+  "scrutinise":"go over it closely / take a hard look at",
+  "scrutinize":"go over it closely",
+  "scrutiny":"a close look / people watching closely",
+  "curtail":"cut back / cut short",
+  "proliferate":"spread fast / pop up everywhere",
+  "plethora":"loads of / tons of / way too many",
+  "paucity":"not much / hardly any",
+  "dearth":"not enough / a real shortage",
+  "prudent":"sensible / careful / smart",
+  "imprudent":"reckless / not smart",
+  "ostensibly":"supposedly / on paper / officially",
+  "insouciance":"not caring / a shrug",
+  "malaise":"a slump / a funk / feeling off",
+  "rectitude":"doing things by the book",
+  "fiscal":"to do with government money / budget-related",
+  "monetary":"to do with money supply / interest rates",
+  "undermine":"chip away at / weaken / eat away at",
+  "contend":"argue / say / reckon",
+  "postpone":"put off / push back",
+  "reckoning":"paying the price / the bill coming due",
+  "scant":"barely any / next to no",
+  "dynamism":"energy / life / go",
+  "serialise":"release it in episodes", "serialize":"release it in episodes",
+  "articulate":"put it into words / spell out",
+  "advocate":"push for / back / be all for",
+  "espouse":"back / go in for",
+  "eschew":"steer clear of / stay away from",
+  "forgo":"skip / go without",
+  "reluctant":"not keen / hesitant",
+  "adamant":"dead set on it / won't budge",
+  "ambivalent":"in two minds / torn",
+  "candid":"straight with you / upfront",
+  "concede":"admit / give it up",
+  "refute":"shoot it down / prove it wrong",
+  "repudiate":"disown / want nothing to do with",
+  "denigrate":"run down / trash",
+  "disparage":"talk down / put down",
+  "laud":"praise / big up",
+  "extol":"rave about",
+  "castigate":"tear into / lay into",
+  "lambast":"blast / tear apart",
+  "censure":"call out / officially tell off",
+  "vindicate":"prove right / clear",
+  "exonerate":"clear / let off the hook",
+  "culpable":"at fault / to blame",
+  "complicit":"in on it",
+  "clandestine":"under the table / on the quiet",
+  "surreptitious":"sneaky / on the sly",
+  "overt":"out in the open",
+  "covert":"undercover / hush-hush",
+  "ubiquitous":"everywhere / all over the place",
+  "prevalent":"common / all around",
+  "endemic":"built in / baked in",
+  "nascent":"just getting going / brand new",
+  "fledgling":"young / just starting out",
+  "burgeoning":"taking off / growing fast",
+  "moribund":"on its last legs / dying",
+  "stagnant":"going nowhere / flat",
+  "sluggish":"slow / dragging",
+  "buoyant":"doing well / holding up nicely",
+  "robust":"solid / strong",
+  "precarious":"shaky / hanging by a thread",
+  "tenuous":"thin / weak / a stretch",
+  "untenable":"can't hold up / not going to fly",
+  "inexorable":"unstoppable / can't be stopped",
+  "inevitable":"bound to happen",
+  "imminent":"about to happen / any minute now",
+  "protracted":"dragged out / long and drawn out",
+  "perennial":"the same old / year after year",
+  "ephemeral":"short-lived / gone in a flash",
+  "arduous":"a slog / really tough",
+  "onerous":"a pain / a heavy load",
+  "cumbersome":"clunky / a hassle",
+  "unwieldy":"awkward / hard to handle",
+  "meticulous":"really careful / picky in a good way",
+  "perfunctory":"half-hearted / going through the motions",
+  "cursory":"a quick once-over",
+  "rigorous":"strict / thorough",
+  "stringent":"tight / strict",
+  "lax":"slack / loose",
+  "profligate":"throwing money around",
+  "frugal":"careful with money / thrifty",
+  "parsimonious":"tight-fisted / stingy",
+  "lucrative":"makes good money",
+  "viable":"workable / can actually work",
+  "feasible":"doable",
+  "futile":"pointless / no use",
+  "redundant":"not needed / laid off",
+  "obsolete":"out of date / past it",
+  "salient":"the main thing / what stands out",
+  "pertinent":"relevant / to the point",
+  "extraneous":"beside the point / not needed",
+  "trivial":"no big deal / minor",
+  "substantial":"a fair bit / pretty big",
+  "negligible":"barely worth mentioning",
+  "myriad":"loads of / countless",
+  "disparate":"all over the map / totally different",
+  "homogeneous":"all much the same",
+  "discrepancy":"a mismatch / doesn't add up",
+  "anomaly":"an odd one out / a blip",
+  "paradigm":"the way it's normally done",
+  "paradox":"doesn't add up but it's true",
+  "conundrum":"a real head-scratcher",
+  "quandary":"a tough spot",
+  "predicament":"a fix / a bind",
+  "quagmire":"a mess you can't get out of",
+  "debacle":"a total disaster",
+  "turmoil":"chaos / a mess",
+  "backlash":"people pushing back hard",
+  "consensus":"everyone's more or less agreed",
+  "dissent":"people speaking against it",
+  "acquiesce":"go along with it",
+  "capitulate":"cave / give in",
+  "relinquish":"give up / hand over",
+  "rescind":"take it back / cancel it",
+  "repeal":"scrap the law",
+  "ratify":"sign off on",
+  "stipulate":"spell out / lay down",
+  "mandate":"require it / an official go-ahead",
+  "subsidy":"government money / a handout",
+  "tariff":"import tax",
+  "austerity":"belt-tightening / spending cuts",
+  "inflation":"prices going up",
+  "recession":"the economy shrinking",
+  "leverage":"borrowed money / clout",
+  "liability":"something you owe / a risk",
+  "hubris":"getting too cocky",
+  "candour":"being straight about it",
+  "zeal":"real enthusiasm",
+  "apathy":"nobody cares",
+  "resilience":"bouncing back",
+  "vigilant":"keeping an eye out",
+  "wary":"a bit suspicious / careful about",
+  "sceptical":"not buying it", "skeptical":"not buying it",
+  "cynical":"assuming the worst of people",
+  "pragmatic":"practical / whatever works",
+  "dogmatic":"my way or nothing",
+  "partisan":"picking sides / very one-sided",
+  "impartial":"not taking sides",
+  "arbitrary":"random / no real reason",
+  "explicit":"spelled out clearly",
+  "implicit":"not said out loud but there",
+  "tacit":"unspoken but understood",
+  "nuance":"the fine detail / the shades of it",
+  "rhetoric":"talk / the way it's spun",
+  "euphemism":"a nicer way of saying it",
+  "hyperbole":"over the top / laying it on thick",
+  "verbose":"goes on and on",
+  "succinct":"short and to the point",
+  "terse":"blunt / clipped",
+  "candidly":"to be straight with you"
+};
+
+
+/* =========================================================
+   状态
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const LS = {book:"dukan.book", known:"dukan.known", flag:"dukan.flag",
+            hist:"dukan.hist", sent:"dukan.sent", cfg:"dukan.cfg"};
+const load = (k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+function save(k,v){
+  try{ localStorage.setItem(k,JSON.stringify(v)); return true; }
+  catch(e){ toast("浏览器存储写满了 —— 去历史页删掉几篇旧文章，或先导出备份。"); return false; }
+}
+
+let book  = load(LS.book, []);
+let known = load(LS.known,[]);
+let flag  = load(LS.flag, []);
+let hist  = load(LS.hist, []);
+let sents = load(LS.sent, []);
+let cfg   = Object.assign({key:"", vendor:"anthropic", base:"",
+  model:"claude-haiku-4-5-20251001", auto:false}, load(LS.cfg,{}));
+
+const DAY = 86400000;
+const BOX = [0,1,3,7,16,35,90];   /* 间隔重复：第 n 次答对后隔几天再问 */
+
+/* 旧版数据升级 */
+let mig = false;
+book.forEach(e=>{
+  if(!Array.isArray(e.contexts)){
+    e.contexts = [{quote:e.quote||"", target:e.target||e.word,
+      title:e.title||"（未命名）", added:e.added||Date.now(), hid:null}];
+    delete e.quote; delete e.target; delete e.title; mig = true;
+  }
+  if(e.spoken === undefined) e.spoken = "";
+  if(e.box === undefined){ e.box = 0; e.due = e.added || Date.now(); e.reviews = 0; mig = true; }
+});
+hist.forEach(h=>{ if(h.done === undefined){ h.done = false; mig = true; } });
+if(mig){ save(LS.book,book); save(LS.hist,hist); }
+
+let tokens = [], curTitle = "", curHistId = null;
+let curIdx = -1, curSi = -1, mode = "word";
+let calY, calM, selDay = null;
+let revQueue = [], revAt = 0, revShown = false, revStat = {yes:0,no:0};
+
+const COMMON_SET = new Set([...COMMON, ...COMMON2]);
+const HARD_SET   = new Set(HARD);
+
+function toast(msg, ms=3400){
+  const t = $("toast"); t.innerHTML = msg; t.classList.add("on");
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove("on"), ms);
+}
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const d2 = n => String(n).padStart(2,"0");
+const fmt = ts => { const d = new Date(ts); return `${d.getFullYear()}.${d2(d.getMonth()+1)}.${d2(d.getDate())}`; };
+const dayKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${d2(d.getMonth()+1)}-${d2(d.getDate())}`; };
+const kindLab = k => k==="fig" ? "比喻／习语" : k==="rare" ? "生僻词" : "中等";
+
+/* =========================================================
+   难度判定
+   ========================================================= */
+function lemma(w){
+  let s = w.toLowerCase().replace(/[’']s$/,"");
+  if(COMMON_SET.has(s)||HARD_SET.has(s)) return s;
+  const tries = [];
+  if(/ies$/.test(s))      tries.push(s.replace(/ies$/,"y"));
+  if(/(s|es)$/.test(s)){  tries.push(s.replace(/es$/,""), s.replace(/s$/,"")); }
+  if(/ied$/.test(s))      tries.push(s.replace(/ied$/,"y"));
+  if(/ed$/.test(s)){      tries.push(s.replace(/ed$/,""), s.replace(/ed$/,"e")); }
+  if(/ing$/.test(s)){     tries.push(s.replace(/ing$/,""), s.replace(/ing$/,"e")); }
+  if(/ly$/.test(s))       tries.push(s.replace(/ly$/,""));
+  if(/(er|est)$/.test(s)) tries.push(s.replace(/(er|est)$/,""));
+  if(/([bdfglmnprt])\1(ed|ing|er)$/.test(s)) tries.push(s.replace(/([bdfglmnprt])\1(ed|ing|er)$/,"$1"));
+  for(const t of tries){ if(COMMON_SET.has(t)||HARD_SET.has(t)) return t; }
+  return s;
+}
+const PRE = ["in","un","im","il","ir","dis","non","re","over","under","pre","mis","anti","semi","multi","inter","sub","super","counter"];
+const SUF = ["al","ic","ical","ive","ful","less","ness","ment","able","ible","ly","ist","ish","hood","ship","wide","like"];
+function derived(s){
+  const inSet = x => x.length>=4 && COMMON_SET.has(x);
+  for(const p of PRE){
+    if(s.startsWith(p) && s.length > p.length+3){
+      const st = s.slice(p.length);
+      if(inSet(st)||inSet(st+"e")||inSet(lemma(st))) return true;
+    }
+  }
+  for(const f of SUF){
+    if(s.endsWith(f) && s.length > f.length+3){
+      const st = s.slice(0,-f.length);
+      if(inSet(st)||inSet(st+"e")||inSet(st+"y")) return true;
+    }
+  }
+  return false;
+}
+function tier(word){
+  const raw = word.toLowerCase(), lem = lemma(word);
+  if(flag.includes(lem))  return 3;
+  if(known.includes(lem)) return 0;
+  if(HARD_SET.has(lem))   return 3;
+  if(COMMON_SET.has(lem)) return 0;
+  if(raw.length <= 5)     return 0;
+  if(/^[A-Z]/.test(word)) return 0;
+  if(derived(lem))        return 0;
+  if(HARD_SUF.test(lem) || lem.length >= 11) return 3;
+  return 2;
+}
+
+/* =========================================================
+   切词 / 分句
+   ========================================================= */
+const ABBR = new Set("mr mrs ms dr prof sir st vs etc no nos inc co ltd plc corp jan feb mar apr jun jul aug sep sept oct nov dec eg ie approx est fig al vol pp ed cf ca circa".split(" "));
+function tokenize(text){
+  const paras = text.replace(/\r/g,"").split(/\n\s*\n|\n/).map(s=>s.trim()).filter(Boolean);
+  const out = [];
+  paras.forEach((p,pi)=>{
+    if(pi>0) out.push({br:true});
+    const lower = p.toLowerCase();
+    let i = 0;
+    while(i < p.length){
+      let hit = null;
+      for(const ph of FIG_PHRASES){
+        if(lower.startsWith(ph, i)){
+          const before = i===0 ? " " : p[i-1];
+          const after  = p[i+ph.length] ?? " ";
+          if(!/[A-Za-z]/.test(before) && !/[A-Za-z]/.test(after)){ hit = ph; break; }
+        }
+      }
+      if(hit){ out.push({t:p.substr(i,hit.length), fig:hit, para:pi}); i += hit.length; continue; }
+      const m = /^[A-Za-z]+(?:['’][A-Za-z]+)?/.exec(p.slice(i));
+      if(m){
+        const w = m[0], key = w.toLowerCase();
+        if(FIG[key]) out.push({t:w, fig:key, para:pi});
+        else         out.push({t:w, tier:tier(w), para:pi});
+        i += w.length;
+      }else{ out.push({t:p[i], punct:true, para:pi}); i++; }
+    }
+  });
+  let si = 0, pend = false;
+  for(let i=0;i<out.length;i++){
+    const tk = out[i];
+    if(tk.br){ si++; pend = false; continue; }
+    if(pend && !tk.punct){ si++; pend = false; }
+    tk.si = si;
+    if(!(tk.punct && /[.!?]/.test(tk.t))) continue;
+    let j = i+1;
+    while(j<out.length && out[j].punct && !out[j].br) j++;
+    const nxt = out[j];
+    if(!nxt || nxt.br){ pend = true; continue; }
+    if(/^\d/.test(nxt.t)) continue;
+    if(tk.t==="." && /^[a-z]/.test(nxt.t)) continue;
+    let k = i-1; while(k>=0 && out[k].punct) k--;
+    const pw = k>=0 ? out[k].t : "";
+    if(tk.t==="." && (ABBR.has(pw.toLowerCase()) || /^[A-Z]$/.test(pw))) continue;
+    pend = true;
+  }
+  return out;
+}
+const joinTokens = list => list.map(tk=>tk.t).join("").replace(/\s+/g," ").trim();
+const sentText = si => joinTokens(tokens.filter(tk=>!tk.br && tk.si===si));
+function sentHTML(idx){
+  const si = tokens[idx].si; let h = "";
+  tokens.forEach((tk,i)=>{ if(tk.br || tk.si!==si) return;
+    h += (i===idx) ? `<b>${esc(tk.t)}</b>` : esc(tk.t); });
+  return h.trim();
+}
+function sentenceOf(idx){
+  const si = tokens[idx].si, A=[], B=[];
+  tokens.forEach((tk,i)=>{ if(tk.br || tk.si!==si) return;
+    if(i<idx) A.push(tk); else if(i>idx) B.push(tk); });
+  return {before:joinTokens(A), target:tokens[idx].t, after:joinTokens(B), full:sentText(si), si};
+}
+function rateOf(list){
+  let total = 0, marked = 0;
+  list.forEach(tk=>{ if(tk.br||tk.punct) return; total++;
+    if(tk.fig || tk.tier===2 || tk.tier===3) marked++; });
+  return total ? Math.round(marked/total*1000)/10 : 0;
+}
+
+/* =========================================================
+   渲染文章
+   ========================================================= */
+function render(){
+  const savedW = new Set(book.map(e=>e.key));
+  const savedS = new Set(sents.map(e=>e.en));
+  const stext = {};
+  tokens.forEach(tk=>{ if(!tk.br && stext[tk.si]===undefined) stext[tk.si]=null; });
+  Object.keys(stext).forEach(k=>{ stext[k] = sentText(+k); });
+  let html = "<p>", openSi = null;
+  const closeS = ()=>{ if(openSi!==null){ html += "</span>"; openSi = null; } };
+  tokens.forEach((tk,i)=>{
+    if(tk.br){ closeS(); html += "</p><p>"; return; }
+    if(openSi !== tk.si){
+      closeS();
+      html += `<span class="s${savedS.has(stext[tk.si])?" skept":""}" data-s="${tk.si}">`;
+      openSi = tk.si;
+    }
+    if(tk.punct){ html += esc(tk.t); return; }
+    const cls = ["w"];
+    if(tk.fig) cls.push("fig");
+    else if(tk.tier===3) cls.push("t3");
+    else if(tk.tier===2) cls.push("t2");
+    if(savedW.has(tk.fig || lemma(tk.t))) cls.push("saved");
+    html += `<span class="${cls.join(" ")}" data-i="${i}">${esc(tk.t)}</span>`;
+  });
+  closeS(); html += "</p>";
+  $("artBody").innerHTML = html;
+}
+$("artBody").addEventListener("click", ev=>{
+  if(mode === "sent"){ const s = ev.target.closest(".s"); if(s) inspectSent(+s.dataset.s); }
+  else { const w = ev.target.closest(".w"); if(w) inspectWord(+w.dataset.i); }
+});
+
+/* =========================================================
+   朗读
+   ========================================================= */
+function speak(text){
+  if(!("speechSynthesis" in window)){ toast("这个浏览器不支持朗读。"); return; }
+  try{ speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = "en-GB"; u.rate = 0.9;
+    speechSynthesis.speak(u);
+  }catch(e){ toast("朗读没能启动。"); }
+}
+
+/* =========================================================
+   API：Anthropic / OpenAI 兼容
+   ========================================================= */
+const VENDORS = {
+  anthropic:{url:"https://api.anthropic.com/v1/messages",
+    models:[["claude-haiku-4-5-20251001","Haiku 4.5 — 最便宜"],["claude-sonnet-5","Sonnet 5 — 更细腻"],["claude-opus-5","Opus 5 — 最强最贵"]],
+    note:"中国大陆无法访问 api.anthropic.com。"},
+  deepseek:{url:"https://api.deepseek.com/chat/completions",
+    models:[["deepseek-chat","deepseek-chat"],["deepseek-reasoner","deepseek-reasoner"]],
+    note:"国内可直连，密钥在 platform.deepseek.com 申请。"},
+  custom:{url:"", models:[], note:"任何 OpenAI 兼容的 /chat/completions 接口都行。"}
+};
+async function api(userText, system, maxTok){
+  if(!cfg.key) throw new Error("NOKEY");
+  const v = cfg.vendor;
+  let url, headers, body, pick;
+  if(v === "anthropic"){
+    url = VENDORS.anthropic.url;
+    headers = {"content-type":"application/json","x-api-key":cfg.key,
+      "anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"};
+    body = {model:cfg.model, max_tokens:maxTok||1200, system, messages:[{role:"user",content:userText}]};
+    pick = d => d.content.filter(x=>x.type==="text").map(x=>x.text).join("\n");
+  }else{
+    url = v==="custom" ? (cfg.base||"").trim() : VENDORS[v].url;
+    if(!url) throw new Error("还没填自定义接口地址。");
+    headers = {"content-type":"application/json","authorization":"Bearer "+cfg.key};
+    body = {model:cfg.model, max_tokens:maxTok||1200,
+      messages:[{role:"system",content:system},{role:"user",content:userText}]};
+    pick = d => d.choices?.[0]?.message?.content || "";
+  }
+  const r = await fetch(url,{method:"POST", headers, body:JSON.stringify(body)});
+  if(!r.ok){
+    const t = await r.text().catch(()=>"");
+    if(r.status===401 || r.status===403) throw new Error("密钥无效或没有权限 —— 去设置里检查。");
+    if(r.status===429) throw new Error("请求太频繁或额度用完了，等一下再试。");
+    if(/credit|balance|insufficient/i.test(t)) throw new Error("余额不足，去服务商后台充值。");
+    throw new Error(`接口返回 ${r.status}：${t.slice(0,150)}`);
+  }
+  return pick(await r.json());
+}
+function asJSON(t){
+  const s = t.replace(/```json/gi,"").replace(/```/g,"").trim();
+  const a = s.indexOf("{"), b = s.indexOf("[");
+  const from = (b>=0 && (a<0||b<a)) ? b : a;
+  return JSON.parse(from>0 ? s.slice(from) : s);
+}
+function apiGuard(err){
+  if(err.message === "NOKEY"){ toast("还没填 API 密钥 —— 去设置页填一个。"); return; }
+  if(/Failed to fetch|NetworkError|load failed/i.test(err.message)){
+    toast("请求发不出去。可能是网络不通，或浏览器拦了本地文件的跨域请求。", 6000); return;
+  }
+  toast(esc(err.message), 5500);
+}
+const SYS_WORD = `你是帮中文母语者读《经济学人》的词汇助手。只输出 JSON 数组，不要任何前后文字或 markdown。
+每个元素：{"word":原词,"def":"中文释义，针对给定语境的那个义项，20字内","spoken":"英语口语里表达同一意思时会怎么说，1-2个地道说法","daily":"一个生活化英文例句，10词左右"}`;
+const SYS_SENT = `你是帮中文母语者读《经济学人》的句子助手。只输出 JSON 对象，不要任何前后文字或 markdown。
+格式：{"zh":"通顺的中文翻译","tpl":"把这句抽象成可复用的英文句型模板，用大写占位符代替具体内容","note":"一句话点出结构难点或值得学的地方，中文40字内"}`;
+
+const fillWords = async items => asJSON(await api(
+  "请处理这些词：\n" + items.map((x,i)=>`${i+1}. ${x.word}\n语境：${x.quote}`).join("\n\n"),
+  SYS_WORD, 300 + items.length*160));
+const readSent = async en => asJSON(await api(en, SYS_SENT, 900));
+
+/* =========================================================
+   侧栏：词
+   ========================================================= */
+function openSheet(){ if(window.innerWidth<=900){ $("side").classList.add("open"); $("btnSheetClose").hidden=false; } }
+const addTo  = (a,k)=>{ if(!a.includes(k)) a.push(k); };
+const rmFrom = (a,k)=>{ const j=a.indexOf(k); if(j>=0) a.splice(j,1); };
+
+function inspectWord(i){
+  curIdx = i; curSi = -1;
+  const tk = tokens[i], key = tk.fig || lemma(tk.t), s = sentenceOf(i);
+  const e = book.find(x=>x.key===key);
+  let tag, hint = "";
+  if(tk.fig){
+    tag = `<span class="insp-tag fig">比喻／习语</span>`;
+    hint = `<div class="hintbox"><b>${esc(FIG[tk.fig][0])}</b><br><br>日常：${esc(FIG[tk.fig][1])}</div>`;
+  }else if(tk.tier===3) tag = `<span class="insp-tag t3">生僻词</span>`;
+  else if(tk.tier===2)  tag = `<span class="insp-tag t2">中等</span>`;
+  else                  tag = `<span class="insp-tag t0">未标记</span>`;
+  const offSpk = SPOKEN[key] || "";
+  const defVal = e ? e.def    : (tk.fig ? FIG[tk.fig][0] : "");
+  const spkVal = e ? e.spoken : offSpk;
+  const useVal = e ? e.use    : (tk.fig ? FIG[tk.fig][1] : "");
+  let seen = "";
+  if(e){
+    const others = e.contexts.filter(c=>c.quote !== s.full);
+    if(others.length) seen = `<div class="seen">你在 ${e.contexts.length} 处见过它</div>` +
+      others.slice(-3).map(c=>`<div class="ctx">${esc(c.quote)}<em>${esc(c.title)}</em></div>`).join("");
+  }
+  $("insp").innerHTML = `
+    <h2 class="insp-word">${esc(tk.t)}</h2>
+    <div class="insp-lemma">${key!==tk.t.toLowerCase() ? "原形 "+esc(key) : "&nbsp;"}</div>
+    ${tag}
+    <div class="actions" style="margin-bottom:12px">
+      <button class="mini" id="bSpeak">🔊 朗读</button>
+      <button class="mini" id="bAsk">API 补释义</button>
+    </div>
+    <p class="sub">原文语境</p>
+    <div class="sent">${sentHTML(i)}</div>
+    <div class="actions" style="margin:-6px 0 14px">
+      <button class="mini" id="bTrans">翻译这句</button>
+      <button class="mini" id="bKeep">存进好句</button>
+    </div>
+    <div id="zhBox"></div>
+    ${hint}
+    ${offSpk && !e ? `<div class="spk"><b>口语会说</b>　${esc(offSpk)}</div>` : ""}
+    ${seen}
+    <p class="sub">释义</p>
+    <textarea id="fDef" placeholder="留空也能存，之后可批量补">${esc(defVal)}</textarea>
+    <p class="sub">口语里怎么说</p>
+    <textarea id="fSpk" placeholder="老外平时会怎么表达">${esc(spkVal)}</textarea>
+    <p class="sub">日常例句</p>
+    <textarea id="fUse" placeholder="一个生活化的句子">${esc(useVal)}</textarea>
+    <div class="actions">
+      <button class="save" id="bSave">${e?"更新收藏":"收藏"}</button>
+      ${e?`<button class="mini danger" id="bDel">移出生词本</button>`:""}
+    </div>
+    <div class="calib"><p class="sub">校准</p>
+      <div class="actions">
+        <button class="mini" id="bKnow">我认识，别再标</button>
+        <button class="mini" id="bHard">我不认识，以后标</button>
+      </div></div>`;
+  $("bSpeak").onclick = ()=>speak(tk.t);
+  $("bSave").onclick  = ()=>saveWord(i,key);
+  $("bTrans").onclick = ()=>translateInto("zhBox", s.full);
+  $("bKeep").onclick  = ()=>{ mode="sent"; syncMode(); inspectSent(s.si); };
+  $("bAsk").onclick   = ()=>askOne(i);
+  if($("bDel")) $("bDel").onclick = ()=>{ book = book.filter(x=>x.key!==key); persist(); inspectWord(i); };
+  $("bKnow").onclick = ()=>{ addTo(known,key); rmFrom(flag,key); recalc(); };
+  $("bHard").onclick = ()=>{ addTo(flag,key);  rmFrom(known,key); recalc(); };
+  document.querySelectorAll(".w.sel,.s.ssel").forEach(x=>x.classList.remove("sel","ssel"));
+  const el = document.querySelector(`.w[data-i="${i}"]`); if(el) el.classList.add("sel");
+  openSheet();
+  if(cfg.auto && !e && !defVal && !tk.fig) askOne(i,true);
+}
+function recalc(){
+  save(LS.known,known); save(LS.flag,flag);
+  tokens = tokens.map(tk => (tk.br||tk.punct||tk.fig) ? tk : Object.assign({},tk,{tier:tier(tk.t)}));
+  render(); if(curIdx>=0) inspectWord(curIdx);
+}
+async function askOne(i,quiet){
+  if(!cfg.key){ if(!quiet) toast("先去设置页填密钥。"); return; }
+  const tk = tokens[i], s = sentenceOf(i), btn = $("bAsk");
+  if(btn){ btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 查询中`; }
+  try{
+    const out = await fillWords([{word:tk.t, quote:s.full}]);
+    const r = Array.isArray(out) ? out[0] : out;
+    if(r){
+      if($("fDef") && r.def)    $("fDef").value = r.def;
+      if($("fSpk") && r.spoken) $("fSpk").value = r.spoken;
+      if($("fUse") && r.daily)  $("fUse").value = r.daily;
+      toast("填好了 —— 检查一下再点收藏。");
+    }
+  }catch(err){ apiGuard(err); }
+  finally{ if(btn){ btn.disabled = false; btn.innerHTML = "API 补释义"; } }
+}
+function saveWord(i,key){
+  const tk = tokens[i], s = sentenceOf(i), now = Date.now();
+  const ctx = {quote:s.full, target:s.target, title:curTitle||"（未命名）", added:now, hid:curHistId};
+  const def = $("fDef").value.trim(), spk = $("fSpk").value.trim(), use = $("fUse").value.trim();
+  let e = book.find(x=>x.key===key);
+  if(e){
+    e.def = def; e.spoken = spk; e.use = use;
+    if(!e.contexts.some(c=>c.quote===ctx.quote)){ e.contexts.push(ctx); toast("又见到它了 —— 例句已累积。"); }
+    else toast("已更新。");
+  }else{
+    book.unshift({key, word:tk.t, kind: tk.fig?"fig":(tk.tier===3?"rare":"mid"),
+      def, spoken:spk, use, contexts:[ctx], added:now, done:false, box:0, due:now, reviews:0});
+    toast("收藏了。");
+  }
+  persist(); inspectWord(i);
+}
+
+/* =========================================================
+   侧栏：句
+   ========================================================= */
+function inspectSent(si){
+  curSi = si; curIdx = -1;
+  const en = sentText(si), e = sents.find(x=>x.en===en);
+  $("insp").innerHTML = `
+    <p class="sub">句子</p>
+    <div class="sent">${esc(en)}</div>
+    <div class="actions" style="margin-bottom:12px">
+      <button class="mini" id="bSpeakS">🔊 朗读</button>
+      <button class="mini" id="bTransS">翻译</button>
+      <button class="mini" id="bTplS">分析句型</button>
+    </div>
+    <div id="zhBox">${e&&e.zh?`<div class="zh">${esc(e.zh)}</div>`:""}${e&&e.tpl?`<div class="tpl"><b>句型</b>　${esc(e.tpl)}</div>`:""}</div>
+    <p class="sub">中文翻译</p>
+    <textarea id="sZh" placeholder="点上面「翻译」自动填">${esc(e?e.zh:"")}</textarea>
+    <p class="sub">可复用句型</p>
+    <textarea id="sTpl" placeholder="点「分析句型」自动填">${esc(e?e.tpl:"")}</textarea>
+    <p class="sub">备注</p>
+    <textarea id="sNote" placeholder="为什么值得记">${esc(e?e.note:"")}</textarea>
+    <div class="actions">
+      <button class="save" id="bKeepS">${e?"更新":"存进好句"}</button>
+      ${e?`<button class="mini danger" id="bDelS">移出好句</button>`:""}
+    </div>`;
+  $("bSpeakS").onclick = ()=>speak(en);
+  $("bTransS").onclick = ()=>translateInto("zhBox", en, "sZh");
+  $("bTplS").onclick   = ()=>analyseInto("zhBox", en);
+  $("bKeepS").onclick  = ()=>{
+    const rec = {en, zh:$("sZh").value.trim(), tpl:$("sTpl").value.trim(), note:$("sNote").value.trim(),
+                 title:curTitle||"（未命名）", added:Date.now(), hid:curHistId};
+    const at = sents.findIndex(x=>x.en===en);
+    if(at>=0){ rec.added = sents[at].added; sents[at] = rec; toast("已更新。"); }
+    else { sents.unshift(rec); toast("存进好句了。"); }
+    save(LS.sent,sents); counts(); render(); inspectSent(si);
+  };
+  if($("bDelS")) $("bDelS").onclick = ()=>{
+    sents = sents.filter(x=>x.en!==en); save(LS.sent,sents); counts(); render(); inspectSent(si); };
+  document.querySelectorAll(".w.sel,.s.ssel").forEach(x=>x.classList.remove("sel","ssel"));
+  const el = document.querySelector(`.s[data-s="${si}"]`); if(el) el.classList.add("ssel");
+  openSheet();
+}
+async function translateInto(boxId, en, alsoField){
+  const box = $(boxId); if(!box) return;
+  box.innerHTML = `<div class="zh"><span class="spin"></span> 翻译中…</div>`;
+  try{
+    const r = await readSent(en);
+    box.innerHTML = `<div class="zh">${esc(r.zh||"")}</div>` + (r.note?`<div class="hintbox">${esc(r.note)}</div>`:"");
+    if(alsoField && $(alsoField) && r.zh) $(alsoField).value = r.zh;
+    if($("sTpl")  && r.tpl  && !$("sTpl").value)  $("sTpl").value  = r.tpl;
+    if($("sNote") && r.note && !$("sNote").value) $("sNote").value = r.note;
+  }catch(err){ box.innerHTML=""; apiGuard(err); }
+}
+async function analyseInto(boxId, en){
+  const box = $(boxId); if(!box) return;
+  box.innerHTML = `<div class="tpl"><span class="spin"></span> 分析中…</div>`;
+  try{
+    const r = await readSent(en);
+    box.innerHTML = `<div class="zh">${esc(r.zh||"")}</div>` +
+      (r.tpl?`<div class="tpl"><b>句型</b>　${esc(r.tpl)}</div>`:"") +
+      (r.note?`<div class="hintbox">${esc(r.note)}</div>`:"");
+    if($("sZh")   && r.zh   && !$("sZh").value) $("sZh").value = r.zh;
+    if($("sTpl")  && r.tpl)  $("sTpl").value  = r.tpl;
+    if($("sNote") && r.note) $("sNote").value = r.note;
+  }catch(err){ box.innerHTML=""; apiGuard(err); }
+}
+
+/* =========================================================
+   首页：日历 + 趋势 + 统计
+   ========================================================= */
+function dueList(){ const n = Date.now(); return book.filter(e=>!e.done && (e.due||0) <= n); }
+
+function drawHome(){
+  const label = `${calY} 年 ${calM+1} 月`;
+  $("moLabel").textContent = label;
+
+  /* 按天归集 */
+  const arts = {}, wds = {};
+  hist.forEach(h=>{ (arts[dayKey(h.added)] ||= []).push(h); });
+  book.forEach(e=>e.contexts.forEach(c=>{ (wds[dayKey(c.added)] ||= []).push(e.word); }));
+
+  /* 月统计 */
+  const inMo = ts => { const d = new Date(ts); return d.getFullYear()===calY && d.getMonth()===calM; };
+  const moArts = hist.filter(h=>inMo(h.added));
+  const moWords = book.reduce((n,e)=>n + e.contexts.filter(c=>inMo(c.added)).length, 0);
+  const moSents = sents.filter(s=>inMo(s.added)).length;
+  const rated = moArts.filter(h=>typeof h.rate === "number");
+  const avg = rated.length ? (rated.reduce((a,h)=>a+h.rate,0)/rated.length).toFixed(1) : null;
+  $("moStats").innerHTML = `<b>${moArts.length}</b> 篇 · <b>${moWords}</b> 词 · <b>${moSents}</b> 句` +
+    (avg ? `<br>平均生词率 ${avg}%` : "");
+
+  /* 日历：行 = 周，周一起 */
+  const first = new Date(calY, calM, 1);
+  const lead = (first.getDay() + 6) % 7;          /* 周一为 0 */
+  const days = new Date(calY, calM+1, 0).getDate();
+  const tk = dayKey(Date.now());
+  let h = ["一","二","三","四","五","六","日"].map(d=>`<div class="wd">${d}</div>`).join("");
+  for(let i=0;i<lead;i++) h += `<div class="cel off"></div>`;
+  for(let d=1;d<=days;d++){
+    const key = `${calY}-${d2(calM+1)}-${d2(d)}`;
+    const na = (arts[key]||[]).length, nw = (wds[key]||[]).length;
+    const tint = nw ? `background:rgba(160,32,26,${Math.min(.07+nw*.05,.42)})` : "";
+    const cls = ["cel"];
+    if(key === tk) cls.push("today");
+    if(key === selDay) cls.push("sel");
+    h += `<button class="${cls.join(" ")}" style="${tint}" data-day="${key}">${d}` +
+         (na?`<span class="dot"></span>`:"") + (nw?`<span class="wc">${nw}</span>`:"") + `</button>`;
+  }
+  $("cal").innerHTML = h;
+  $("cal").querySelectorAll("[data-day]").forEach(b=>b.onclick = ()=>{
+    selDay = (selDay === b.dataset.day) ? null : b.dataset.day; drawHome(); });
+
+  /* 某天详情 */
+  const box = $("dayBox");
+  if(selDay){
+    const na = arts[selDay]||[], nw = wds[selDay]||[];
+    box.hidden = false;
+    box.innerHTML = `<h4>${selDay.replace(/-/g,".")}</h4>` +
+      (na.length ? na.map(a=>`<div class="dayart">${esc(a.title||"（未命名）")}
+         <button data-open="${a.id}">打开</button>
+         ${a.done?'<span style="font-size:11px;color:var(--figur)"> 已读完</span>':'<span style="font-size:11px;color:var(--ink-faint)"> 在读</span>'}
+         ${typeof a.rate==="number"?`<span style="font-size:11px;color:var(--ink-faint)"> · 生词率 ${a.rate}%</span>`:""}
+         </div>`).join("") : `<p class="empty">这天没读文章。</p>`) +
+      (nw.length ? `<div class="wlist">${nw.map(w=>`<span class="wtag">${esc(w)}</span>`).join("")}</div>` : "");
+    box.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openHist(b.dataset.open));
+  } else box.hidden = true;
+
+  drawTrend();
+
+  const n = dueList().length;
+  $("ctaRevSub").innerHTML = n ? `今天有 <b>${n}</b> 个词到期` : (book.length?"今天没有到期的词":"生词本还空着");
+  $("cDue").textContent = n ? n : "";
+}
+
+function drawTrend(){
+  const pts = hist.filter(h=>typeof h.rate === "number")
+                  .sort((a,b)=>a.added-b.added).slice(-24);
+  if(pts.length < 2){
+    $("trendNote").textContent = "读满两篇之后，这里会画出你的生词率变化。每次点「我认识，别再标」，工具就更懂你一点，这条线应该慢慢往下走。";
+    $("trendChart").innerHTML = ""; return;
+  }
+  const rs = pts.map(p=>p.rate), lo = Math.min(...rs), hi = Math.max(...rs);
+  const pad = Math.max((hi-lo)*.2, 1), top = hi+pad, bot = Math.max(lo-pad,0);
+  const W = 100, H = 34;
+  const x = i => (i/(pts.length-1))*W;
+  const y = r => H - ((r-bot)/(top-bot||1))*H;
+  const line = pts.map((p,i)=>`${x(i).toFixed(2)},${y(p.rate).toFixed(2)}`).join(" ");
+  const dots = pts.map((p,i)=>`<circle cx="${x(i).toFixed(2)}" cy="${y(p.rate).toFixed(2)}" r="0.7" fill="var(--saved)"/>`).join("");
+  $("trendChart").innerHTML = `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:120px;display:block;overflow:visible">
+      <polyline points="${line}" fill="none" stroke="var(--saved)" stroke-width="0.5"
+        vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+      ${dots}
+    </svg>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink-faint);margin-top:6px">
+      <span>${fmt(pts[0].added)} · ${pts[0].rate}%</span>
+      <span>${fmt(pts[pts.length-1].added)} · ${pts[pts.length-1].rate}%</span>
+    </div>`;
+  const delta = (pts[pts.length-1].rate - pts[0].rate).toFixed(1);
+  $("trendNote").innerHTML = delta < 0
+    ? `这 ${pts.length} 篇里，生词率降了 <b>${Math.abs(delta)}</b> 个百分点。`
+    : delta > 0 ? `这 ${pts.length} 篇里生词率升了 ${delta} 个百分点 —— 可能只是文章更难，不必在意单次波动。`
+    : `这 ${pts.length} 篇的生词率基本持平。`;
+}
+
+/* =========================================================
+   复习（间隔重复）
+   ========================================================= */
+function startReview(){
+  revQueue = dueList().sort((a,b)=>(a.due||0)-(b.due||0));
+  revAt = 0; revShown = false; revStat = {yes:0,no:0};
+  show("viewRev"); drawRev();
+}
+function drawRev(){
+  if(!revQueue.length){
+    $("revBar").textContent = "";
+    $("revBody").innerHTML = `<div class="revcard"><p class="empty">${
+      book.length ? "今天没有到期的词。明天再来，或去生词本自由翻看。" : "生词本还空着 —— 先去读一篇，收几个词。"}</p>
+      <div class="revbtns"><button class="big" id="revHome">回首页</button></div></div>`;
+    $("revHome").onclick = ()=>{ show("viewHome"); drawHome(); };
+    return;
+  }
+  if(revAt >= revQueue.length){
+    $("revBar").textContent = "";
+    $("revBody").innerHTML = `<div class="revcard">
+      <h2 class="h" style="font-size:26px">这一轮做完了</h2>
+      <p class="d" style="margin:8px 0 0">记住 ${revStat.yes} 个，还需再练 ${revStat.no} 个。</p>
+      <div class="revbtns">
+        <button class="big" id="revAgain">再来一轮</button>
+        <button class="big" id="revHome">回首页</button></div></div>`;
+    $("revHome").onclick  = ()=>{ show("viewHome"); drawHome(); };
+    $("revAgain").onclick = startReview;
+    return;
+  }
+  const e = revQueue[revAt];
+  const c = e.contexts[e.contexts.length-1] || {};
+  $("revBar").innerHTML = `<span>${revAt+1} / ${revQueue.length}</span>
+    <span style="margin-left:auto">第 ${e.box+1} 级 · 已复习 ${e.reviews||0} 次</span>`;
+  let cloze = esc(c.quote||"");
+  if(c.target) cloze = cloze.replace(esc(c.target), "<u> </u>");
+  if(!revShown){
+    $("revBody").innerHTML = `<div class="revcard">
+      <div class="cloze">${cloze||"（没有原句）"}</div>
+      <div class="revbtns">
+        <button class="big" id="revShow">显示答案</button>
+        <button class="big" id="revSay">🔊 听一下</button></div></div>`;
+    $("revShow").onclick = ()=>{ revShown = true; drawRev(); };
+    $("revSay").onclick  = ()=>speak(e.word);
+  }else{
+    $("revBody").innerHTML = `<div class="revcard">
+      <h2 class="revword">${esc(e.word)}</h2>
+      ${e.def ? `<div class="revdef">${esc(e.def)}</div>` : `<div class="revdef" style="color:var(--ink-faint)">还没有释义</div>`}
+      ${e.spoken ? `<div class="revspk">口语：${esc(e.spoken)}</div>` : ""}
+      <div class="cloze" style="text-align:left">${esc(c.quote||"")}</div>
+      ${e.use ? `<div class="revspk">例句：${esc(e.use)}</div>` : ""}
+      <div class="revsrc">${esc(c.title||"")} · 见过 ${e.contexts.length} 次</div>
+      <div class="revbtns">
+        <button class="big no"  id="revNo">没记住</button>
+        <button class="big yes" id="revYes">记住了</button>
+        <button class="big" id="revSay2">🔊</button></div></div>`;
+    $("revSay2").onclick = ()=>speak(e.word);
+    $("revNo").onclick   = ()=>grade(false);
+    $("revYes").onclick  = ()=>grade(true);
+  }
+}
+function grade(ok){
+  const e = revQueue[revAt], now = Date.now();
+  e.reviews = (e.reviews||0) + 1;
+  if(ok){
+    e.box = Math.min((e.box||0)+1, BOX.length-1);
+    e.due = now + BOX[e.box]*DAY;
+    if(e.box >= BOX.length-1) e.done = true;
+    revStat.yes++;
+  }else{
+    e.box = 0; e.due = now + DAY; revStat.no++;
+  }
+  save(LS.book, book); counts();
+  revAt++; revShown = false; drawRev();
+}
+
+/* =========================================================
+   列表：生词本 / 好句 / 历史
+   ========================================================= */
+function persist(){ save(LS.book,book); counts(); render(); if(!$("viewBook").hidden) drawBook(); }
+function counts(){
+  $("cBook").textContent = book.length;
+  $("cSent").textContent = sents.length;
+  $("cHist").textContent = hist.length;
+  const n = dueList().length; $("cDue").textContent = n ? n : "";
+}
+function drawBook(){
+  const q = $("bookSearch").value.trim().toLowerCase(), f = $("bookFilter").value;
+  let list = book.slice();
+  if(f==="active") list = list.filter(e=>!e.done);
+  if(f==="done")   list = list.filter(e=>e.done);
+  if(q) list = list.filter(e=>(e.word+e.def+e.spoken+e.use+
+        e.contexts.map(c=>c.quote+c.title).join("")).toLowerCase().includes(q));
+  const blanks = book.filter(e=>!e.def).length, n = $("bookNote");
+  if(blanks){ n.hidden = false;
+    n.innerHTML = cfg.key ? `有 <b>${blanks}</b> 个词没释义。点「批量补释义」一次补完。`
+      : `有 <b>${blanks}</b> 个词没释义。去设置页填 API 密钥就能批量补全。`;
+  } else n.hidden = true;
+  if(!list.length){
+    $("cardsBook").innerHTML = `<p class="empty" style="text-align:center;padding:40px 0">${
+      book.length?"没有符合条件的词。":"生词本还空着。"}</p>`; return;
+  }
+  $("cardsBook").innerHTML = list.map(e=>{
+    const ctxs = e.contexts.slice(-3).map(c=>{
+      let q = esc(c.quote);
+      if(c.target) q = q.replace(esc(c.target), `<b>${esc(c.target)}</b>`);
+      return `<div class="q">${q}<em>${esc(c.title)} · ${fmt(c.added)}</em></div>`;
+    }).join("");
+    return `<div class="card ${e.done?"done":""}">
+      <h3>${esc(e.word)}</h3>
+      <div class="meta">${kindLab(e.kind)} · 见过 ${e.contexts.length} 次 · 第 ${(e.box||0)+1} 级 · 收于 ${fmt(e.added)}</div>
+      ${e.def ? `<div class="def">${esc(e.def)}</div>` : `<div class="def blank">释义待补</div>`}
+      ${e.spoken ? `<div class="use"><span>口语</span> ${esc(e.spoken)}</div>` : ""}
+      ${ctxs}
+      ${e.use ? `<div class="use"><span>例句</span> ${esc(e.use)}</div>` : ""}
+      <div class="actions">
+        <button class="mini" data-say="${esc(e.word)}">🔊</button>
+        <button class="mini" data-done="${esc(e.key)}">${e.done?"标为未掌握":"标为已掌握"}</button>
+        <button class="mini danger" data-del="${esc(e.key)}">删除</button>
+      </div></div>`;
+  }).join("");
+  $("cardsBook").querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(b.dataset.say));
+  $("cardsBook").querySelectorAll("[data-done]").forEach(b=>b.onclick=()=>{
+    const e = book.find(x=>x.key===b.dataset.done);
+    if(e){ e.done = !e.done; if(!e.done){ e.box = 0; e.due = Date.now(); } }
+    persist(); drawBook(); });
+  $("cardsBook").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    book = book.filter(x=>x.key!==b.dataset.del); persist(); drawBook(); });
+}
+async function batchFill(){
+  const todo = book.filter(e=>!e.def);
+  if(!todo.length){ toast("每个词都有释义了。"); return; }
+  if(!cfg.key){ toast("先去设置页填密钥。"); return; }
+  const btn = $("btnFill"); btn.disabled = true; let done = 0;
+  try{
+    for(let i=0;i<todo.length;i+=10){
+      const chunk = todo.slice(i,i+10);
+      btn.innerHTML = `<span class="spin"></span> ${done}/${todo.length}`;
+      const out = await fillWords(chunk.map(e=>({word:e.word, quote:e.contexts[0]?.quote||e.word})));
+      (Array.isArray(out)?out:[out]).forEach((r,j)=>{
+        const e = chunk[j]; if(!e||!r) return;
+        if(r.def) e.def = r.def;
+        if(r.spoken && !e.spoken) e.spoken = r.spoken;
+        if(r.daily && !e.use) e.use = r.daily;
+        done++;
+      });
+      save(LS.book,book);
+    }
+    toast(`补好了 ${done} 个词。`);
+  }catch(err){ apiGuard(err); }
+  finally{ btn.disabled = false; btn.textContent = "批量补释义"; drawBook(); }
+}
+function drawSent(){
+  const q = $("sentSearch").value.trim().toLowerCase();
+  const list = sents.filter(e=>!q || (e.en+e.zh+e.tpl+e.note+e.title).toLowerCase().includes(q));
+  if(!list.length){
+    $("cardsSent").innerHTML = `<p class="empty" style="text-align:center;padding:40px 0">${
+      sents.length?"没有符合条件的句子。":"还没存过句子。阅读时切到「句子模式」，点句子就能存。"}</p>`; return;
+  }
+  $("cardsSent").innerHTML = list.map(e=>`<div class="card">
+    <p class="en">${esc(e.en)}</p>
+    <div class="meta">${esc(e.title)} · ${fmt(e.added)}</div>
+    ${e.zh   ? `<div class="def">${esc(e.zh)}</div>`:""}
+    ${e.tpl  ? `<div class="tpl" style="margin-bottom:8px"><b>句型</b>　${esc(e.tpl)}</div>`:""}
+    ${e.note ? `<div class="use"><span>要点</span> ${esc(e.note)}</div>`:""}
+    <div class="actions">
+      <button class="mini" data-saysent="${esc(e.en)}">🔊</button>
+      <button class="mini danger" data-delsent="${esc(e.en)}">删除</button>
+    </div></div>`).join("");
+  $("cardsSent").querySelectorAll("[data-saysent]").forEach(b=>b.onclick=()=>speak(b.dataset.saysent));
+  $("cardsSent").querySelectorAll("[data-delsent]").forEach(b=>b.onclick=()=>{
+    sents = sents.filter(x=>x.en!==b.dataset.delsent); save(LS.sent,sents); counts(); drawSent(); });
+}
+function drawHist(){
+  const q = $("histSearch").value.trim().toLowerCase(), f = $("histFilter").value;
+  let list = hist.slice().sort((a,b)=>b.read-a.read);
+  if(f==="open") list = list.filter(e=>!e.done);
+  if(f==="done") list = list.filter(e=>e.done);
+  if(q) list = list.filter(e=>(e.title+e.text).toLowerCase().includes(q));
+  if(!list.length){
+    $("cardsHist").innerHTML = `<p class="empty" style="text-align:center;padding:40px 0">${
+      hist.length?"没有符合条件的文章。":"还没读过文章。"}</p>`; return;
+  }
+  $("cardsHist").innerHTML = list.map(e=>{
+    const nw = book.reduce((n,b)=>n + b.contexts.filter(c=>c.hid===e.id).length, 0);
+    return `<div class="card">
+      <h3 style="font-size:19px">${esc(e.title||"（未命名）")}</h3>
+      <div class="meta">${e.done?"已读完":"在读"} · ${e.words} 词${
+        typeof e.rate==="number"?` · 生词率 ${e.rate}%`:""} · 收词 ${nw} · ${fmt(e.read)}</div>
+      <div class="q" style="border:none;padding:0;margin-bottom:10px">${esc(e.text.slice(0,150))}…</div>
+      <div class="actions">
+        <button class="mini" data-open="${e.id}">${e.done?"重读":"继续读"}</button>
+        <button class="mini danger" data-rm="${e.id}">删除</button>
+      </div></div>`;
+  }).join("");
+  $("cardsHist").querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openHist(b.dataset.open));
+  $("cardsHist").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{
+    hist = hist.filter(x=>String(x.id)!==b.dataset.rm); save(LS.hist,hist); counts(); drawHist(); });
+}
+function openHist(id){
+  const e = hist.find(x=>String(x.id)===String(id)); if(!e) return;
+  e.read = Date.now(); save(LS.hist,hist);
+  startReading(e.title, e.text, e.id);
+}
+
+/* =========================================================
+   阅读
+   ========================================================= */
+function startReading(title, text, id){
+  curTitle = title; curHistId = id || null;
+  $("artTitle").textContent = title || "未命名文章";
+  $("artTitle").style.display = title ? "" : "none";
+  tokens = tokenize(text);
+  const h = hist.find(x=>x.id === id);
+  if(h && typeof h.rate !== "number"){ h.rate = rateOf(tokens); save(LS.hist,hist); }
+  render(); mode = "word"; syncMode();
+  $("insp").innerHTML = `<p class="empty">点任何一个词看释义，或切到「句子模式」翻译整句、收藏好句。</p>`;
+  show("viewArticle"); window.scrollTo(0,0);
+}
+function syncMode(){
+  document.body.classList.toggle("smode", mode==="sent");
+  $("btnMode").setAttribute("aria-pressed", mode==="sent");
+  $("btnMode").textContent = mode==="sent" ? "词语模式" : "句子模式";
+}
+function finishReading(){
+  const h = hist.find(x=>x.id === curHistId);
+  if(!h){ toast("这篇不在历史里，没法归档。"); return; }
+  h.done = true; h.finished = Date.now(); save(LS.hist,hist);
+  const nw = book.reduce((n,b)=>n + b.contexts.filter(c=>c.hid===h.id).length, 0);
+  const ns = sents.filter(s=>s.hid===h.id).length;
+  $("justDone").innerHTML = `<div class="note" style="margin-bottom:14px">
+    归档了 <b>${esc(h.title||"未命名文章")}</b> —— 收了 <b>${nw}</b> 个词、<b>${ns}</b> 个句子${
+    typeof h.rate==="number"?`，生词率 <b>${h.rate}%</b>`:""}。</div>`;
+  tokens = []; curHistId = null; curTitle = "";
+  selDay = dayKey(Date.now());
+  show("viewHome"); drawHome(); window.scrollTo(0,0);
+}
+
+/* =========================================================
+   导出 / 导入
+   ========================================================= */
+function dl(name, text, type){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text],{type}));
+  a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+const cell = v => `"${String(v??"").replace(/"/g,'""')}"`;
+const today = () => new Date().toISOString().slice(0,10);
+function exportBookCsv(){
+  const head = ["单词","类型","释义","口语说法","例句","原文句子","出处","收藏日期","复习级别","已掌握"];
+  const rows = book.map(e=>[e.word, kindLab(e.kind), e.def, e.spoken, e.use,
+    e.contexts.map(c=>c.quote).join(" ⏐ "), e.contexts.map(c=>c.title).join(" ⏐ "),
+    fmt(e.added), (e.box||0)+1, e.done?"1":"0"].map(cell).join(","));
+  dl(`生词本-${today()}.csv`, "\uFEFF"+[head.map(cell).join(","),...rows].join("\n"), "text/csv");
+}
+function exportSentCsv(){
+  const head = ["英文","中文","句型","要点","出处","日期"];
+  const rows = sents.map(e=>[e.en,e.zh,e.tpl,e.note,e.title,fmt(e.added)].map(cell).join(","));
+  dl(`好句-${today()}.csv`, "\uFEFF"+[head.map(cell).join(","),...rows].join("\n"), "text/csv");
+}
+const backup = all => dl(`读刊备份-${today()}.json`,
+  JSON.stringify({v:3, exported:new Date().toISOString(), book, known, flag, sents, hist: all?hist:[]}, null, 2),
+  "application/json");
+
+/* =========================================================
+   视图切换
+   ========================================================= */
+const VIEWS = ["viewHome","viewInput","viewArticle","viewRev","viewBook","viewSent","viewHist","viewSet"];
+const TABMAP = {tabHome:["viewHome"], tabRead:["viewInput","viewArticle"], tabRev:["viewRev"],
+  tabBook:["viewBook"], tabSent:["viewSent"], tabHist:["viewHist"], tabSet:["viewSet"]};
+function show(v){
+  VIEWS.forEach(id=>$(id).hidden = (id!==v));
+  Object.keys(TABMAP).forEach(t=>$(t).setAttribute("aria-selected", TABMAP[t].includes(v)));
+  document.body.classList.toggle("noside", v !== "viewArticle");
+  if(v !== "viewArticle"){ $("side").classList.remove("open"); $("btnSheetClose").hidden = true; }
+}
+
+/* =========================================================
+   事件
+   ========================================================= */
+const SAMPLE = `Li Dazhi paced back and forth on a set resembling a chief executive's office as he rehearsed lines in Zhengzhou, a city in central China that has become a hub for microdramas. The serialised minute-long shows have taken over phone screens across the country; one in two people watch them. In 2025 microdramas grew into a 100bn yuan ($15bn) business, having created some 700,000 jobs and perhaps 1.3m indirect ones—a rare bright spot of dynamism in China's sputtering economy.`;
+
+$("btnRead").onclick = ()=>{
+  const text = $("tBody").value.trim();
+  if(!text){ $("tBody").focus(); toast("先粘一段正文进来。"); return; }
+  const title = $("tTitle").value.trim(), id = Date.now();
+  hist.unshift({id, title, text, words:text.split(/\s+/).length, added:id, read:id, done:false, rate:null});
+  if(hist.length > 150) hist = hist.slice(0,150);
+  save(LS.hist,hist); counts();
+  $("justDone").innerHTML = "";
+  startReading(title, text, id);
+  $("tTitle").value = ""; $("tBody").value = "";
+};
+$("btnSample").onclick = ()=>{ $("tTitle").value = "China's microdrama boom"; $("tBody").value = SAMPLE; $("btnRead").click(); };
+$("btnSwap").onclick   = ()=>show("viewInput");
+$("btnFinish").onclick = finishReading;
+$("btnMode").onclick   = ()=>{ mode = mode==="word"?"sent":"word"; syncMode();
+  $("insp").innerHTML = `<p class="empty">${mode==="sent"?"点任意句子：翻译、看句型、存进好句。":"点任意词看释义。"}</p>`; };
+$("btnSheetClose").onclick = ()=>{ $("side").classList.remove("open"); $("btnSheetClose").hidden = true; };
+
+$("tabHome").onclick = ()=>{ show("viewHome"); drawHome(); };
+$("tabRead").onclick = ()=>show(tokens.length ? "viewArticle" : "viewInput");
+$("tabRev").onclick  = startReview;
+$("tabBook").onclick = ()=>{ show("viewBook"); drawBook(); };
+$("tabSent").onclick = ()=>{ show("viewSent"); drawSent(); };
+$("tabHist").onclick = ()=>{ show("viewHist"); drawHist(); };
+$("tabSet").onclick  = ()=>show("viewSet");
+$("ctaRead").onclick = ()=>show("viewInput");
+$("ctaRev").onclick  = startReview;
+$("moPrev").onclick = ()=>{ calM--; if(calM<0){ calM=11; calY--; } selDay=null; drawHome(); };
+$("moNext").onclick = ()=>{ calM++; if(calM>11){ calM=0; calY++; } selDay=null; drawHome(); };
+
+$("bookSearch").oninput  = drawBook;
+$("bookFilter").onchange = drawBook;
+$("sentSearch").oninput  = drawSent;
+$("histSearch").oninput  = drawHist;
+$("histFilter").onchange = drawHist;
+$("btnFill").onclick     = batchFill;
+$("btnExpCsv").onclick   = exportBookCsv;
+$("btnExpSent").onclick  = exportSentCsv;
+$("btnExpJson").onclick  = ()=>backup(false);
+$("btnBackup").onclick   = ()=>backup(true);
+$("btnClearHist").onclick = ()=>{
+  if(!confirm("删掉所有阅读历史？生词本和好句不受影响，但日历和趋势会清空。")) return;
+  hist = []; save(LS.hist,hist); counts(); drawHist();
+};
+$("btnImp").onclick = ()=>$("fileImp").click();
+$("fileImp").onchange = ev=>{
+  const f = ev.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const d = JSON.parse(r.result);
+      if(!Array.isArray(d.book)) throw 0;
+      let n = 0, m = 0;
+      const seen = new Set(book.map(x=>x.key));
+      d.book.forEach(x=>{
+        if(!x.key) return;
+        if(!Array.isArray(x.contexts)) x.contexts = [{quote:x.quote||"", target:x.target||x.word,
+          title:x.title||"（未命名）", added:x.added||Date.now(), hid:null}];
+        if(x.spoken===undefined) x.spoken = "";
+        if(x.box===undefined){ x.box = 0; x.due = x.added||Date.now(); x.reviews = 0; }
+        if(!seen.has(x.key)){ book.push(x); seen.add(x.key); n++; }
+      });
+      if(Array.isArray(d.sents)){
+        const se = new Set(sents.map(x=>x.en));
+        d.sents.forEach(x=>{ if(x.en && !se.has(x.en)){ sents.push(x); se.add(x.en); m++; } });
+      }
+      if(Array.isArray(d.hist)){
+        const he = new Set(hist.map(x=>x.id));
+        d.hist.forEach(x=>{ if(x.id && !he.has(x.id)){ if(x.done===undefined) x.done=false; hist.push(x); } });
+      }
+      (d.known||[]).forEach(k=>addTo(known,k));
+      (d.flag ||[]).forEach(k=>addTo(flag,k));
+      save(LS.known,known); save(LS.flag,flag); save(LS.sent,sents); save(LS.hist,hist);
+      save(LS.book,book); counts(); drawBook();
+      toast(`导入 ${n} 个新词、${m} 个新句子。`);
+    }catch(e){ toast("这个文件读不出来 —— 需要本工具导出的 JSON。"); }
+    ev.target.value = "";
+  };
+  r.readAsText(f);
+};
+
+/* 设置 */
+function fillModels(){
+  const v = VENDORS[cfg.vendor];
+  $("customBox").hidden = cfg.vendor !== "custom";
+  $("vendorNote").textContent = v.note;
+  if(cfg.vendor === "custom"){
+    $("fModel").outerHTML = `<input type="text" id="fModel" style="margin-top:10px" placeholder="模型名，例 gpt-4o-mini" value="${esc(cfg.model)}">`;
+    $("fModel").oninput = ()=>{ cfg.model = $("fModel").value.trim(); save(LS.cfg,cfg); };
+  }else{
+    $("fModel").outerHTML = `<select id="fModel" style="margin-top:10px">${
+      v.models.map(([id,lab])=>`<option value="${id}">${lab}</option>`).join("")}</select>`;
+    if(!v.models.some(([id])=>id===cfg.model)){ cfg.model = v.models[0][0]; save(LS.cfg,cfg); }
+    $("fModel").value = cfg.model;
+    $("fModel").onchange = ()=>{ cfg.model = $("fModel").value; save(LS.cfg,cfg); };
+  }
+}
+$("fKey").value = cfg.key;
+$("fVendor").value = cfg.vendor;
+$("fBase").value = cfg.base;
+$("fAuto").checked = !!cfg.auto;
+fillModels();
+$("fVendor").onchange = ()=>{ cfg.vendor = $("fVendor").value; save(LS.cfg,cfg); fillModels(); };
+$("fBase").oninput = ()=>{ cfg.base = $("fBase").value.trim(); save(LS.cfg,cfg); };
+$("fAuto").onchange = ()=>{ cfg.auto = $("fAuto").checked; save(LS.cfg,cfg); };
+$("btnSaveKey").onclick = ()=>{ cfg.key = $("fKey").value.trim(); save(LS.cfg,cfg);
+  toast(cfg.key ? "密钥存好了，只在这台设备。" : "密钥已清空。"); };
+$("btnDropKey").onclick = ()=>{ cfg.key=""; $("fKey").value=""; save(LS.cfg,cfg); toast("密钥已删除。"); };
+$("btnTest").onclick = async ()=>{
+  cfg.key = $("fKey").value.trim(); save(LS.cfg,cfg);
+  const b = $("btnTest"); b.disabled = true; b.innerHTML = `<span class="spin"></span> 测试中`;
+  try{ await api("回复两个字：正常", "只回复用户要求的字。", 20); toast("连接正常，可以用了。"); }
+  catch(err){ apiGuard(err); }
+  finally{ b.disabled = false; b.textContent = "测试连接"; }
+};
+$("btnWipe").onclick = ()=>{
+  if(!confirm("清空生词本、好句、历史和校准记录？不能撤销。建议先导出备份。")) return;
+  if(!confirm("再确认一次：真的全部删除？")) return;
+  [LS.book,LS.known,LS.flag,LS.hist,LS.sent].forEach(k=>localStorage.removeItem(k));
+  book=[]; known=[]; flag=[]; hist=[]; sents=[];
+  counts(); toast("清空了。");
+};
+
+/* 启动 */
+const nowD = new Date(); calY = nowD.getFullYear(); calM = nowD.getMonth();
+counts(); show("viewHome"); drawHome();
+
+</script>
+</body>
+</html>
