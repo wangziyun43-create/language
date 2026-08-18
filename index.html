@@ -22,6 +22,7 @@ button{cursor:pointer}
   border-bottom:1px solid var(--rule);background:var(--desk);position:sticky;top:0;z-index:20}
 .brand{font-weight:700;letter-spacing:.02em;font-size:15px}
 .brand em{font-style:normal;color:var(--saved)}
+.brand .ver{font-size:10px;font-weight:400;color:var(--ink-faint);letter-spacing:.05em;margin-left:3px}
 .tabs{display:flex;gap:2px;margin-left:auto;flex-wrap:wrap}
 .tab{background:none;border:1px solid transparent;padding:5px 10px;font-size:12.5px;
   color:var(--ink-soft);border-radius:2px}
@@ -106,8 +107,6 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--figur);outline-o
 .article p{margin:0 0 1.05em}
 .w{cursor:pointer;border-radius:2px}
 .w:hover{background:#E4E9E8}
-.w.t2{background:var(--rare-mid)}
-.w.t3{background:var(--rare)}
 .w.fig{border-bottom:1.5px solid var(--figur);position:relative;background:none}
 .w.fig::before,.w.fig::after{content:'';position:absolute;bottom:-1.5px;width:1.5px;height:5px;background:var(--figur)}
 .w.fig::before{left:0}.w.fig::after{right:0}
@@ -115,9 +114,6 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--figur);outline-o
 .w.sel{outline:2px solid var(--ink);outline-offset:1px}
 .w.saved{box-shadow:inset 0 -3px 0 var(--saved)}
 .s{border-radius:2px}
-body.smode .article .w{pointer-events:none}
-body.smode .s{cursor:pointer}
-body.smode .s:hover{background:#E4E9E8}
 .s.ssel{background:#DDEAE8;outline:1px solid var(--figur)}
 .s.skept{box-shadow:inset 0 -2px 0 var(--figur)}
 
@@ -155,6 +151,8 @@ body.smode .s:hover{background:#E4E9E8}
 .ctx em{font-style:normal;font-family:var(--sans);font-size:10.5px;color:var(--ink-faint);display:block}
 .spk{background:#EDF2F1;border-left:2px solid var(--figur);padding:8px 11px;font-size:13px;
   line-height:1.5;margin-bottom:12px}
+.backw{background:none;border:none;padding:0;color:var(--figur);font-size:12px;
+  text-decoration:underline;margin-bottom:10px}
 
 /* ---------- 列表 ---------- */
 .bookhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
@@ -236,7 +234,7 @@ label.ck input{width:auto;margin-top:2px}
 <body>
 
 <div class="top">
-  <div class="brand">读刊 <em>·</em> Economist</div>
+  <div class="brand">读刊 <em>·</em> Economist <span class="ver">v4</span></div>
   <div class="tabs">
     <button class="tab" id="tabHome" aria-selected="true">首页</button>
     <button class="tab" id="tabRead" aria-selected="false">阅读</button>
@@ -270,7 +268,7 @@ label.ck input{width:auto;margin-top:2px}
         <div id="trendChart"></div>
       </div>
       <div class="cta">
-        <button id="ctaRead"><span class="t">读一篇</span><span class="s">粘贴正文，开始标注</span></button>
+        <button id="ctaRead"><span class="t">读一篇</span><span class="s">粘贴正文，开始阅读</span></button>
         <button id="ctaRev"><span class="t">复习单词</span><span class="s" id="ctaRevSub"></span></button>
       </div>
     </section>
@@ -298,11 +296,8 @@ label.ck input{width:auto;margin-top:2px}
     <!-- 文章 -->
     <section class="view" id="viewArticle" hidden>
       <div class="bar">
-        <span><span class="chip a">dynamism</span> 生僻</span>
-        <span><span class="chip b">resembling</span> 中等</span>
-        <span><span class="chip c">sputtering</span> 比喻</span>
+        <span><span class="chip c">sputtering</span> 只标比喻／习语用法，其余的词直接点</span>
         <span style="margin-left:auto"></span>
-        <button class="ghost" id="btnMode" aria-pressed="false">句子模式</button>
         <button class="ghost" id="btnSwap">换一篇</button>
         <button class="ghost" id="btnFinish">读完归档</button>
       </div>
@@ -375,7 +370,7 @@ label.ck input{width:auto;margin-top:2px}
             <button class="ghost" id="btnTest">测试连接</button>
             <button class="ghost danger" id="btnDropKey">删除密钥</button>
           </div>
-          <p>没有密钥也能用：高亮、口语对照、生词本、好句、复习、朗读全部离线。只有句子翻译和自动补释义需要联网。</p>
+          <p>没有密钥也能用：比喻标注、口语对照、生词本、好句、复习、朗读全部离线。只有句子翻译、句型分析和自动补释义需要联网。</p>
         </div>
         <div class="setblock">
           <h3>服务商</h3>
@@ -397,11 +392,16 @@ label.ck input{width:auto;margin-top:2px}
         </div>
         <div class="setblock">
           <h3>数据</h3>
-          <p style="margin-top:0">全部存在浏览器 localStorage 里，清缓存会丢。</p>
+          <p style="margin-top:0">全部存在这台设备这个浏览器的 localStorage 里。换设备、换浏览器不会同步，清「网站数据」会丢 —— 定期导出备份。</p>
           <div class="actions" style="margin-top:10px">
             <button class="ghost" id="btnBackup">导出全部备份</button>
             <button class="ghost danger" id="btnWipe">清空所有数据</button>
           </div>
+        </div>
+        <div class="setblock">
+          <h3>版本</h3>
+          <p style="margin-top:0"><b>v4</b> —— 只标比喻／习语；句子模式并入词语面板；翻译与释义不再走 JSON，避开引号解析报错。</p>
+          <p>如果这里显示的版本号不是你刚传上去的那个，说明浏览器读的是缓存。在网址后面加一个 <b>?v=4</b> 重新打开，或者下拉强制刷新。</p>
         </div>
       </div>
     </section>
@@ -411,7 +411,7 @@ label.ck input{width:auto;margin-top:2px}
   <aside class="side" id="side">
     <button class="ghost sheet-close" id="btnSheetClose" hidden>关闭</button>
     <div class="insp" id="insp">
-      <p class="empty">点文章里任何一个词，这里会显示它所在的整句、难度判定、口语里怎么说，以及收藏按钮。</p>
+      <p class="empty">点文章里任何一个词，这里会显示它所在的整句、口语里怎么说，以及收藏按钮。</p>
     </div>
   </aside>
 </div>
@@ -419,19 +419,21 @@ label.ck input{width:auto;margin-top:2px}
 <div id="toast"></div>
 
 <script>
+const VER = "v4";
+
 /* 高频词：不标记。约 1900 词。 */
 const COMMON = `a about above accept across act action add address admit adult advice affect afraid after again against age ago agree ahead air all allow almost alone along already also although always among amount and anger angry animal another answer any anyone anything appear apple apply approach area argue arm around arrive art as ask asleep at attack attempt attend attention author available avoid away baby back bad bag ball bank bar base basic be beach bear beat beautiful because become bed before begin behind believe bell belong below beside best better between beyond big bill bird birth bit bite black blame blank blind block blood blow blue board boat body boil bone book boot border bore born borrow boss both bother bottle bottom box boy brain branch brave bread break breakfast breath bridge bright bring broad brother brown brush build burn bus business busy but buy by cake call calm camera camp can cancel cancer candidate cap capital car card care career careful carry case cash cat catch cause ceiling cell centre center century certain chain chair chance change character charge chart cheap check cheese chest chicken chief child choice choose church circle city claim class clean clear clever climb clock close cloth cloud club coach coast coat code coffee cold collect college colour color come comfort command comment common company compare complete computer concern condition confirm connect consider contain continue control cook cool copy corner correct cost could count country couple course court cover cow crash cream create credit crime cross crowd cry cup current cut dance danger dark date daughter day dead deal dear death debate debt decade decide deep degree delay deliver demand deny depend describe design desire desk despite detail develop die diet differ difficult dinner direct dirty discuss disease dish distance divide do doctor dog dollar door double doubt down draw dream dress drink drive drop drug dry due during dust duty each ear early earn earth ease east easy eat edge education effect effort egg eight either else empty end enemy energy engine enjoy enough enter entire equal escape especially even evening event ever every evidence exact example except exchange exist expect expense experience explain express extra eye face fact factor fail fair fall false family famous far farm fashion fast fat father fault favour favor fear feed feel few field fight figure file fill film final find fine finger finish fire firm first fish fit five fix flat floor flow flower fly focus follow food foot for force foreign forest forget form former forward four free fresh friend from front fruit full fun function fund funny future gain game garden gas gate gather general gentle get gift girl give glad glass go goal god gold good govern grade grand grass great green grey gray ground group grow guard guess guest guide gun guy habit hair half hall hand hang happen happy hard hat hate have he head health hear heart heat heavy height hell hello help her here hero hers herself hide high hill him himself hire his history hit hold hole holiday home honest hope horse hospital hot hotel hour house how however huge human hundred hungry hunt hurry hurt husband i ice idea identify if ill image imagine impact important improve in inch include income increase indeed index indicate industry inform inside instead intend interest into introduce invest invite involve iron island issue it item its itself job join joke journey joy judge jump just keep key kick kid kill kind king kiss kitchen knee knife knock know lack lady lake land language large last late laugh law lay lead leaf learn least leave left leg legal lend length less lesson let letter level library lie life lift light like likely limit line link lip list listen little live load local lock long look lose loss lot loud love low luck lunch machine mad magazine mail main major make male man manage many map mark market marry mass master match material matter may maybe me meal mean meaning measure meat media medical meet member memory mention menu message metal method middle might mile milk million mind mine minister minute miss mistake mix model modern moment money month moon moral more morning most mother motor mountain mouth move movie much music must my myself name narrow nation natural nature near nearly necessary neck need neighbour neighbor neither nervous net never new news next nice night nine no noise none nor normal north nose not note nothing notice now number nurse object obtain obvious occur ocean of off offer office officer official often oh oil old on once one only onto open operate opinion oppose option or orange order ordinary organ other our ours ourselves out outside over own pack page pain paint pair palace paper parent park part particular partner party pass past path patient pattern pay peace pen people per percent perfect perform perhaps period permit person phone photo pick picture piece place plan plane plant plastic plate play please pleasure plenty plus pocket point police policy politics poor popular port position possible post pot potato pound pour power practice practise prefer prepare present president press pressure pretty prevent previous price pride primary prime print prison private prize probably problem produce product profit program progress project promise proper protect proud prove provide public pull purchase pure purpose push put quality quarter queen question quick quiet quite race radio rail rain raise range rare rate rather reach read ready real reason receive recent recognise recognize record red reduce refer reflect refuse regard region regular relate release relief remain remember remind remove repeat replace reply report represent request require research respect respond rest result return reveal rich ride right ring rise risk river road rock role roll roof room root round row rule run rush safe sail salary sale salt same sand save say scale scene school science score sea search season seat second secret secretary section secure see seed seek seem select sell send sense sentence separate series serious serve service set settle seven several sex shake shall shape share sharp she sheet shelf shift shine ship shirt shock shoe shoot shop short should shoulder shout show shut sick side sight sign signal silence silver similar simple since sing single sink sir sister sit site situation six size skill skin sky sleep slight slip slow small smart smell smile smoke snow so social society soft soil soldier solve some someone something sometimes son song soon sorry sort soul sound soup source south space speak special speed spend spirit split sport spot spread spring square staff stage stair stand standard star start state station stay steal steel step stick still stock stomach stone stop store storm story straight strange street strength stress stretch strike strong structure student study stuff stupid style subject succeed such sudden suffer sugar suggest suit summer sun supply support suppose sure surface surprise survey survive sweet swim switch system table take talk tall tape task taste tax tea teach team tear technology telephone tell temperature ten tend term terrible test than thank that the their theirs them theme themselves then theory there therefore these they thick thin thing think third thirty this those though thought thousand threat three throat through throw thus ticket tie tight time tiny tip tire title to today together tomorrow tone tongue tonight too tool tooth top total touch tough tour toward town trade tradition traffic train transfer transport travel treat tree trial trip trouble true trust truth try turn twenty twice two type typical ugly uncle under understand union unit unite universe university unless until up upon upper urban us use useful usual value van variety various vast vegetable version very victim victory video view village visit voice volume vote wage wait wake walk wall want war warm warn wash waste watch water wave way we weak wealth weapon wear weather week weight welcome well west wet what when where whether which while white who whole whom whose why wide wife wild will win wind window wine wing winner winter wire wise wish with within without woman wonder wood word work world worry worse worth would wound write wrong yard year yellow yes yesterday yet you young your yours yourself youth`
 .trim().split(/\s+/);
 
 /* 中频词：报刊常见、订阅者基本都认识 → 也不标记。 */
-const COMMON2 = `abandon absolute abstract abuse academic accelerate access accident accompany accomplish account accurate accuse achieve acknowledge acquire adapt adequate adjust administration admire advance advantage advertise advise afford agency agenda agriculture aid aim aircraft alarm alliance alter alternative ambition analyse analyze analysis ancient angle announce annual anticipate anxiety apart apparent appeal appetite applaud appoint appreciate approve approximate architect archive argument arise arrange arrest article artificial aspect assemble assess asset assign assist associate assume assure athlete atmosphere attach attitude attract attribute audience authority auto average awake award aware background badly balance ban band barrier basis battle bay behave belief benefit bet bias bid bind biology blend boast bond bonus boost bound boundary brand breed brief broadcast budget bulk bunch burden bury cabinet calculate campaign candidate capable capacity capture carbon career carve category cattle caution cease celebrate census centre ceremony certificate challenge champion channel chaos characteristic charity chase chemical chip choke chronic circuit circulate cite civil civilian clarify clash classic client climate clinic cluster coal coalition code cognitive coincide collapse colleague collective column combat combine comfortable commercial commission commit committee commodity communicate community compensate compete competent compile complain complex complicate comply component compose compound comprehensive comprise compromise conceal concede conceive concentrate concept conclude concrete conduct confer confess confidence confine conflict confront confuse congress consequence conservative consist constant constitute constrain construct consult consume contact contemporary contest context contract contradict contrary contrast contribute controversy convention converse convert convey convict convince cope core corporate correlate correspond corrupt council counsel counter coup courage craft crash crawl creative creature criteria critic crucial crude crush cuisine cultivate culture curious currency curve custom customer cycle damage data database deadline debut decade decay deceive decline decorate dedicate deem defeat defect defend define definite delegate delete deliberate delicate democracy demonstrate dense department departure depict deploy deposit depress deprive derive descend describe deserve destination destroy detain detect deteriorate determine device devote diagnose dialogue dictate differentiate digital dignity dilemma dimension diminish diplomat disagree disappear disaster discharge discipline disclose discount discourage discover discrimination dismiss disorder display dispose dispute disrupt distinct distinguish distort distribute district disturb diverse document domain domestic dominate donate downturn draft drain drama dramatic drift drought drown dual duration dwell dynamic ecology economic economy edit educate elaborate elderly elect electric electronic element eliminate elite embark embarrass embrace emerge emergency emission emotion emphasis employ empower enable enact encounter encourage endorse endure enforce engage engineer enhance enormous ensure enterprise entertain enthusiasm entitle entity entrepreneur environment episode equip equivalent era erupt essay essential establish estate estimate ethical ethnic evacuate evaluate eventually evolve exaggerate examine exceed excel excess exclude excuse execute executive exempt exercise exert exhaust exhibit expand expect expedition expel experiment expert expire explode exploit explore export expose extend extensive extent external extinct extract extreme fabric facilitate facility faculty fade failure faint fare fatal fate feasible feature federal fee fellow fertile festival fibre fiction fierce finance financial firearm flee fleet flexible flourish fluctuate fluid forecast foreign forge formal format formula forum foster found foundation fraction fragile fragment framework fraud freeze frequency friction fringe frontier frustrate fuel fulfil fulfill fundamental furnish furthermore gadget gallery gamble gap garment gauge gene generate generation generous genetic genuine gesture giant glance glimpse global globe glory govern grab gradual grain grant graph grasp grateful gravity grief grip gross growth guarantee guideline habitat halt handle harbour hardware harm harsh harvest hazard headline heal heir hence herd heritage hesitate hidden highlight hint hire historic hollow honour hook horizon horror host hostile household housing humble humour hybrid hypothesis identical identity ideology ignore illustrate imitate immediate immense immigrant imminent immune implement implication imply import impose impress imprison inability inadequate incentive incidence incident incline incorporate incur indeed independent indication indicator indigenous individual induce indulge industrial inevitable infant infect inflate inflation inflict influence inject injure innovate input inquire insert insight insist inspect inspire install instance instant institute instruct instrument insufficient insult insurance intact integrate intellectual intelligence intense interact interfere interim interior internal interpret interrupt interval intervene intimate intrigue invade invasion inventory invert investigate investment invoke isolate issue journal journalist judgment jurisdiction justify keen kingdom label laboratory labour labor landscape lane lapse launch layer layout lease lecture legislate legitimate leisure lengthy lens liberal liberty licence license lifetime likewise linger linguistic liquid literacy literature litter livestock loan lobby locate logic loop loyal luxury magnitude maintain majority mandate manifest manipulate manner manual manufacture manuscript margin marginal marine marital martial mature maximum meanwhile mechanic mechanism medieval mediocre medium melt mental mercy mere merge merit metaphor migrate military militant mimic mineral minimal minimum minor minority mirror missile mission mobile mobilise mode moderate modest modify module moist molecule momentum monitor monopoly monument mood morale mortgage motion motivate mould mount mundane municipal mutual myth namely narrative navigate negative neglect negotiate nerve neutral niche nominate norm notable notion notorious novel nuclear nutrient obesity objective obligation observe obstacle occasion occupation occupy odd offence offend offset offspring omit ongoing onset opponent opportunity oppress optimal optimism orbit orchestra ordeal organise organize orient origin outbreak outcome outlet outline outlook output outrage outstanding overall overcome overhaul overlap overlook oversee overwhelm owe ownership oxygen pace panel panic parade parallel parameter parliament partial participate passage passenger passion passive patent patrol patron peculiar peer penalty pending pension perceive perception permanent persist perspective persuade pest petition phase phenomenon philosophy physical physician pile pill pilot pioneer pipeline pistol pitch pity plague plea plead pledge plot plunge poet poison polish poll pollute populate portion portrait portray pose possess postpone potential poverty precede precise predator predict predominant preference pregnant prejudice preliminary premium prescribe presence preserve prestige presumably pretend prevalence prey principal principle prior priority prisoner privilege probable probe procedure proceed process proclaim procure profession professor profile prohibit prominent prompt pronounce proof propaganda property proportion proposal propose prosecute prospect prosper protest protocol prototype province provoke psychology publication publish punish pupil pursue puzzle qualify quest queue quota quote racial radiation radical rally random ratio rational react realise realize realm reap rebel rebuild recall recede recession recipe recipient reciprocal reckon reconcile recover recruit recur redundant reform refuge refund regime register regime regime regret regulate rehabilitate rehearse reign reinforce reject rejoice relative relax relevant reliable reluctant remarkable remedy renew renovate rent repair repay repertoire replicate reputation rescue resemble reserve reside residue resign resist resolve resort resource restore restrain restrict resume retail retain retire retreat retrieve revenue reverse revert review revise revive revolt revolution reward rhythm rid ridge rigid rival roam roast robot rot rotate rough route routine royal rubber rubbish rural sacred sacrifice sake sanitary satellite satisfy saturate scandal scarce scatter schedule scheme scholar scope scramble scrap scratch screen sculpture seal secondary sector secular segment seize seldom senate senior sensation sensible sensitive sentiment sequence sergeant session severe shade shadow shallow shed shelter shield shortage shrink sibling siege signature significant silk simulate simultaneous sincere skeleton sketch slam slave slice slide slogan slope slot smash snap soar sociology solar sole solicit solid solidarity solution somewhat sophisticated sour sovereign span spare spark spatial spectrum speculate sphere spike spin spine spiral spite splash sponsor spontaneous spouse spray sprint spy stability stable stack stadium stain stake stance staple startle statistic statue status statute steady steer stem stereotype stern sticky stiff stigma stimulate sting stir strain strand strap strategy stray streak stream strengthen strict strip stroke stroll structural struggle stumble stun subject submit subscribe subsequent substance substantial substitute subtle suburb succession sufficient suicide suite summarise summit summon superb superficial superior supervise supplement suppress supreme surge surgery surname surpass surplus surrender surround suspect suspend suspicion sustain swallow swap sway sweep swell swift symbol sympathy symptom syndrome synthesis tackle tactic tag tailor talent tangle target tariff tease technique tedious telescope temporary tempt tenant tender tension tenure terminal terminate terrain territory testify testimony texture theft theoretical therapy thesis thorough threaten thrill thrive tide tighten timber timely toll tolerate token toll topic torch torture toxic trace track tract trail trait transaction transcend transform transit transition translate transmit transparent trap trauma tread treasure treaty tremble tremendous trend tribe tribunal tribute trigger trim triple triumph trivial troop tropical trump trunk tuition tumble tunnel turmoil turnout twist ultimate unanimous uncertain undergo undertake undo uneasy unemployment unfair unfold uniform unify unique universal unlikely unload unrest unveil update upgrade uphold upset urge urgent usage utility utilise utilize utter vaccine vague vain valid vanish variable vary vehicle veil vein venture venue verbal verdict verify versatile vessel veteran veto viable vibrant vicious vigour violate violence virtual virtue virus visible vision visual vital vivid vocal vocation void volatile voluntary volunteer vulnerable wander ward warehouse warrant warrior wary wax weave wedge weird welfare whatsoever whereas whereby whilst whim whisper wholesale widespread widow width wield willing wipe withdraw witness workforce workshop worship worthwhile wrap wreck yield zone`
+const COMMON2 = `abandon absolute abstract abuse academic accelerate access accident accompany accomplish account accurate accuse achieve acknowledge acquire adapt adequate adjust administration admire advance advantage advertise advise afford agency agenda agriculture aid aim aircraft alarm alliance alter alternative ambition analyse analyze analysis ancient angle announce annual anticipate anxiety apart apparent appeal appetite applaud appoint appreciate approve approximate architect archive argument arise arrange arrest article artificial aspect assemble assess asset assign assist associate assume assure athlete atmosphere attach attitude attract attribute audience authority auto average awake award aware background badly balance ban band barrier basis battle bay behave belief benefit bet bias bid bind biology blend boast bond bonus boost bound boundary brand breed brief broadcast budget bulk bunch burden bury cabinet calculate campaign candidate capable capacity capture carbon career carve category cattle caution cease celebrate census centre ceremony certificate challenge champion channel chaos characteristic charity chase chemical chip choke chronic circuit circulate cite civil civilian clarify clash classic client climate clinic cluster coal coalition code cognitive coincide collapse colleague collective column combat combine comfortable commercial commission commit committee commodity communicate community compensate compete competent compile complain complex complicate comply component compose compound comprehensive comprise compromise conceal concede conceive concentrate concept conclude concrete conduct confer confess confidence confine conflict confront confuse congress consequence conservative consist constant constitute constrain construct consult consume contact contemporary contest context contract contradict contrary contrast contribute controversy convention converse convert convey convict convince cope core corporate correlate correspond corrupt council counsel counter coup courage craft crash crawl creative creature criteria critic crucial crude crush cuisine cultivate culture curious currency curve custom customer cycle damage data database deadline debut decade decay deceive decline decorate dedicate deem defeat defect defend define definite delegate delete deliberate delicate democracy demonstrate dense department departure depict deploy deposit depress deprive derive descend describe deserve destination destroy detain detect deteriorate determine device devote diagnose dialogue dictate differentiate digital dignity dilemma dimension diminish diplomat disagree disappear disaster discharge discipline disclose discount discourage discover discrimination dismiss disorder display dispose dispute disrupt distinct distinguish distort distribute district disturb diverse document domain domestic dominate donate downturn draft drain drama dramatic drift drought drown dual duration dwell dynamic ecology economic economy edit educate elaborate elderly elect electric electronic element eliminate elite embark embarrass embrace emerge emergency emission emotion emphasis employ empower enable enact encounter encourage endorse endure enforce engage engineer enhance enormous ensure enterprise entertain enthusiasm entitle entity entrepreneur environment episode equip equivalent era erupt essay essential establish estate estimate ethical ethnic evacuate evaluate eventually evolve exaggerate examine exceed excel excess exclude excuse execute executive exempt exercise exert exhaust exhibit expand expect expedition expel experiment expert expire explode exploit explore export expose extend extensive extent external extinct extract extreme fabric facilitate facility faculty fade failure faint fare fatal fate feasible feature federal fee fellow fertile festival fibre fiction fierce finance financial firearm flee fleet flexible flourish fluctuate fluid forecast foreign forge formal format formula forum foster found foundation fraction fragile fragment framework fraud freeze frequency friction fringe frontier frustrate fuel fulfil fulfill fundamental furnish furthermore gadget gallery gamble gap garment gauge gene generate generation generous genetic genuine gesture giant glance glimpse global globe glory govern grab gradual grain grant graph grasp grateful gravity grief grip gross growth guarantee guideline habitat halt handle harbour hardware harm harsh harvest hazard headline heal heir hence herd heritage hesitate hidden highlight hint hire historic hollow honour hook horizon horror host hostile household housing humble humour hybrid hypothesis identical identity ideology ignore illustrate imitate immediate immense immigrant imminent immune implement implication imply import impose impress imprison inability inadequate incentive incidence incident incline incorporate incur indeed independent indication indicator indigenous individual induce indulge industrial inevitable infant infect inflate inflation inflict influence inject injure innovate input inquire insert insight insist inspect inspire install instance instant institute instruct instrument insufficient insult insurance intact integrate intellectual intelligence intense interact interfere interim interior internal interpret interrupt interval intervene intimate intrigue invade invasion inventory invert investigate investment invoke isolate issue journal journalist judgment jurisdiction justify keen kingdom label laboratory labour labor landscape lane lapse launch layer layout lease lecture legislate legitimate leisure lengthy lens liberal liberty licence license lifetime likewise linger linguistic liquid literacy literature litter livestock loan lobby locate logic loop loyal luxury magnitude maintain majority mandate manifest manipulate manner manual manufacture manuscript margin marginal marine marital martial mature maximum meanwhile mechanic mechanism medieval mediocre medium melt mental mercy mere merge merit metaphor migrate military militant mimic mineral minimal minimum minor minority mirror missile mission mobile mobilise mode moderate modest modify module moist molecule momentum monitor monopoly monument mood morale mortgage motion motivate mould mount mundane municipal mutual myth namely narrative navigate negative neglect negotiate nerve neutral niche nominate norm notable notion notorious novel nuclear nutrient obesity objective obligation observe obstacle occasion occupation occupy odd offence offend offset offspring omit ongoing onset opponent opportunity oppress optimal optimism orbit orchestra ordeal organise organize orient origin outbreak outcome outlet outline outlook output outrage outstanding overall overcome overhaul overlap overlook oversee overwhelm owe ownership oxygen pace panel panic parade parallel parameter parliament partial participate passage passenger passion passive patent patrol patron peculiar peer penalty pending pension perceive perception permanent persist perspective persuade pest petition phase phenomenon philosophy physical physician pile pill pilot pioneer pipeline pistol pitch pity plague plea plead pledge plot plunge poet poison polish poll pollute populate portion portrait portray pose possess postpone potential poverty precede precise predator predict predominant preference pregnant prejudice preliminary premium prescribe presence preserve prestige presumably pretend prevalence prey principal principle prior priority prisoner privilege probable probe procedure proceed process proclaim procure profession professor profile prohibit prominent prompt pronounce proof propaganda property proportion proposal propose prosecute prospect prosper protest protocol prototype province provoke psychology publication publish punish pupil pursue puzzle qualify quest queue quota quote racial radiation radical rally random ratio rational react realise realize realm reap rebel rebuild recall recede recession recipe recipient reciprocal reckon reconcile recover recruit recur redundant reform refuge refund regime register regret regulate rehabilitate rehearse reign reinforce reject rejoice relative relax relevant reliable reluctant remarkable remedy renew renovate rent repair repay repertoire replicate reputation rescue resemble reserve reside residue resign resist resolve resort resource restore restrain restrict resume retail retain retire retreat retrieve revenue reverse revert review revise revive revolt revolution reward rhythm rid ridge rigid rival roam roast robot rot rotate rough route routine royal rubber rubbish rural sacred sacrifice sake sanitary satellite satisfy saturate scandal scarce scatter schedule scheme scholar scope scramble scrap scratch screen sculpture seal secondary sector secular segment seize seldom senate senior sensation sensible sensitive sentiment sequence sergeant session severe shade shadow shallow shed shelter shield shortage shrink sibling siege signature significant silk simulate simultaneous sincere skeleton sketch slam slave slice slide slogan slope slot smash snap soar sociology solar sole solicit solid solidarity solution somewhat sophisticated sour sovereign span spare spark spatial spectrum speculate sphere spike spin spine spiral spite splash sponsor spontaneous spouse spray sprint spy stability stable stack stadium stain stake stance staple startle statistic statue status statute steady steer stem stereotype stern sticky stiff stigma stimulate sting stir strain strand strap strategy stray streak stream strengthen strict strip stroke stroll structural struggle stumble stun subject submit subscribe subsequent substance substantial substitute subtle suburb succession sufficient suicide suite summarise summit summon superb superficial superior supervise supplement suppress supreme surge surgery surname surpass surplus surrender surround suspect suspend suspicion sustain swallow swap sway sweep swell swift symbol sympathy symptom syndrome synthesis tackle tactic tag tailor talent tangle target tariff tease technique tedious telescope temporary tempt tenant tender tension tenure terminal terminate terrain territory testify testimony texture theft theoretical therapy thesis thorough threaten thrill thrive tide tighten timber timely toll tolerate token topic torch torture toxic trace track tract trail trait transaction transcend transform transit transition translate transmit transparent trap trauma tread treasure treaty tremble tremendous trend tribe tribunal tribute trigger trim triple triumph trivial troop tropical trump trunk tuition tumble tunnel turmoil turnout twist ultimate unanimous uncertain undergo undertake undo uneasy unemployment unfair unfold uniform unify unique universal unlikely unload unrest unveil update upgrade uphold upset urge urgent usage utility utilise utilize utter vaccine vague vain valid vanish variable vary vehicle veil vein venture venue verbal verdict verify versatile vessel veteran veto viable vibrant vicious vigour violate violence virtual virtue virus visible vision visual vital vivid vocal vocation void volatile voluntary volunteer vulnerable wander ward warehouse warrant warrior wary wax weave wedge weird welfare whatsoever whereas whereby whilst whim whisper wholesale widespread widow width wield willing wipe withdraw witness workforce workshop worship worthwhile wrap wreck yield zone`
 .trim().split(/\s+/);
 
-/* 学术／新闻高阶词：始终标记（t3）。 */
+/* 学术／新闻高阶词：内部判定用，不再高亮。 */
 const HARD = `abate aberration abhor abstruse accede acquiesce acrimony acumen adamant adjunct admonish adroit adumbrate advocacy aegis affluence aggrandise aggregate alacrity albeit alienate allocate allude altruism ambivalent ameliorate amenable amorphous anachronism analogous anathema anomaly antagonise antipathy apathy aplomb apposite apprise arbitrary arcane archaic ardent arduous articulate ascendancy ascetic aspersion assiduous assuage astute attenuate audacity augment auspicious austerity autarky autonomy avarice aversion banal behest belie bellicose belligerent benign bequeath bereft bespoke bifurcate bolster bombast bourgeois bravado brevity bureaucracy burgeon buttress cadre cajole callous canonical capacious capitulate capricious cartel castigate catalyst caucus caustic cavalier censure cerebral chagrin charlatan chasten chicanery churlish circumspect circumvent clandestine coalesce coerce cogent cohort collateral collusion commensurate commodity complacent complicit conciliatory concomitant condone confluence conflate congenial conjecture connote consensus consign consolidate conspicuous constituency construe contingent contrite contrive conundrum convivial copious corollary corroborate coterie covert cull culpable cumulative cursory cynical dearth debacle debase decorum defer deference deficit deflation deleterious delineate demagogue demographic denigrate denizen deprecate deregulate derivative derogatory desultory detente deterrent detrimental devolve dexterity diaspora dichotomy didactic diffident dilettante diminution disaffection disavow discerning discourse disparage disparate disparity dissemble disseminate dissent dissident dissonance divergent divest doctrinaire dogma dossier dubious duplicity dynamism ebullient echelon eclectic edifice efficacy egalitarian egregious elicit elucidate elusive emaciate embargo embellish emblematic eminent empirical emulate encumber endemic enervate enfranchise engender enigmatic enmity ennui entrench enumerate ephemeral epitome equanimity equitable equivocal erode erroneous erudite eschew esoteric espouse ethos euphemism evanescent exacerbate exacting exculpate exemplary exhort exigency exonerate expedient expiate explicit expropriate extant extol extraneous extrapolate extricate exuberant facile faction fastidious fatuous fealty feasible felicitous fervent fetter fiat fiscal flagrant fledgling florid foment forbearance forestall fortuitous fractious franchise fraught frugal fulminate furtive futile galvanise garner garrulous germane gerrymander glut grandiose gratuitous gregarious guile hackneyed halcyon harangue harbinger hegemony heresy heterodox hiatus hierarchy homogeneous hubris hyperbole iconoclast idiosyncratic ignominy illicit immutable impasse impecunious impede imperative imperious impervious implacable implausible implicit importune impugn inadvertent inane inaugurate incendiary incessant inchoate incipient incisive incongruous incontrovertible incumbent indefatigable indelible indicative indict indigenous indigent indolent indubitable ineffable ineluctable inept inequity inexorable infer infirmity ingenuous inherent inimical iniquity innocuous innuendo inordinate inscrutable insidious insipid insolvent instigate insular insurgent integral interlocutor interminable intractable intransigent intrepid inundate invective inveterate invidious irascible irrevocable itinerant jettison jingoism judicious juncture junta laconic lambast largesse latent laudable lax legacy lethargy leverage liability liaison litany litigate lucid lucrative ludicrous machination magnanimous malaise malfeasance malign mandate manifest maverick mediate mendacious mercurial meritocracy meticulous milieu mitigate modicum mollify monetary moribund munificent myriad nadir nascent nebulous nefarious negligible nepotism nomenclature nominal nonchalant normative notwithstanding nuance obdurate obfuscate obsequious obsolete obstinate obtuse odious oligarchy ominous onerous opaque opprobrium ossify ostensible ostentatious ostracise paltry panacea paradigm paradox parity parochial parsimony partisan patronage paucity pecuniary pedantic pejorative penchant penury perennial perfunctory peripheral pernicious perpetuate perquisite persona pertinent perturb pervasive petulant philanthropy pique pittance placate plaintive platitude plausible plebiscite plethora plutocracy polarise polemic ponderous portend posit posterity postulate pragmatic precarious precedent preclude predicament predilection preeminent preempt premise prerogative prescient prevail prevaricate probity proclivity prodigious profligate profound proliferate prolific promulgate propensity propitious proponent proscribe protectionism protracted provenance provisional proximity prudent puerile pugnacious punitive purport putative quagmire quandary quell querulous quiescent quintessential quixotic quorum ramification rancour rapacious rapprochement ratify raucous recalcitrant recant recondite recrimination recuse redolent redress referendum refractory refute regressive reiterate relegate relinquish remiss remit remuneration renege repatriate repeal replete reprehensible reprisal reproach repudiate requisite rescind resilient resolute resonant respite restive retaliate reticent retrench retrospect reverence rhetoric rife rigour riposte robust rudimentary ruminate sagacious salient salutary sanction sanctimonious sanguine sardonic scarcity scathing scrupulous scrutiny secular sedition seminal sequester serendipity serialise serialize servile simulacrum sinecure singular skew slander sobriety solvency somnolent sophistry sovereign specious spurious squander stagnant staid stalwart stasis staunch stipulate stringent strident subjugate subordinate subpoena subsidy subsume subterfuge subvert succinct sundry supersede supine supplant surfeit surreptitious surrogate sycophant tacit tangible tantamount tariff tautology temerity tenable tenacious tendentious tenet tenuous tepid terse thwart torpid tortuous tout tractable transient trenchant trepidation truculent truncate turpitude tutelage ubiquitous umbrage unassailable uncanny unctuous underpin undermine unequivocal unfettered unilateral unmitigated unprecedented unscrupulous untenable unwieldy usurp vacillate vacuous vagary vanguard vapid variance vehement venal veneer venerable veracity verbose vestige vexation viable vicarious vicissitude vigilant vilify vindicate virulent visceral vitiate vitriol vociferous volatile voluminous voracious warrant wary welter whet winnow wrest zeal zenith`
 .trim().split(/\s+/);
 
-/* 比喻／习语：常见词但在语境里不是字面义。key 为小写短语。 */
+/* 比喻／习语：常见词但在语境里不是字面义。key 为小写短语。这是唯一会高亮的一类。 */
 const FIG = {
   "sputtering":["（引擎）噗噗作响、快要熄火 → 形容经济／计划失去动力、举步维艰","The startup's growth has been sputtering since spring."],
   "bright spot":["亮点；黯淡局面中唯一乐观的部分","Dessert was the one bright spot of that dinner."],
@@ -499,15 +501,32 @@ const FIG = {
   "spat":["小口角、争执","A spat broke out over parking."],
   "tepid":["温热 → 不温不火、反应冷淡","The response was tepid."],
   "lacklustre":["无光彩的 → 平淡无起色的","Another lacklustre quarter."],
-  "lackluster":["无光彩的 → 平淡无起色的","Another lackluster quarter."]
+  "lackluster":["无光彩的 → 平淡无起色的","Another lackluster quarter."],
+  "tumbled":["翻滚跌落 → （数字）大幅下跌","Ticket prices tumbled after the holiday."],
+  "tumble":["大幅下跌","Shares tumble on bad news."],
+  "in tandem":["串联地 → 同步、齐头并进","The two problems grew in tandem."],
+  "tandem":["双人自行车 → 同步、并行","They rose in tandem."],
+  "crimping":["压皱、夹紧 → 抑制、拖住","High rents are crimping small shops."],
+  "crimp":["抑制、限制","Rules crimp what they can sell."],
+  "slapping":["拍上去 → 随手贴上（标签、关税）","They're slapping stickers on everything."],
+  "scuttled":["凿沉（船）→ 使计划泡汤","The deal was scuttled at the last minute."],
+  "scuttle":["使泡汤、破坏","One objection scuttled the plan."],
+  "concealing":["遮掩、隐瞒","He's concealing how bad it got."],
+  "cursory":["草草的、敷衍的一瞥","She gave it a cursory glance."],
+  "echoing":["回声 → 呼应、附和","His speech was echoing last year's."],
+  "dodgers":["躲避者 → 逃避（税、责任）的人","Tax dodgers are the target."],
+  "haggling":["讨价还价、扯皮","We spent an hour haggling over price."],
+  "clamp down":["收紧、严加管制","They clamped down on late returns."],
+  "pass-through":["转嫁的、过路式的（不增值）","It was just a pass-through arrangement."],
+  "charged ahead":["不顾阻力向前推进","He charged ahead without asking."],
+  "soared":["翱翔 → 猛涨","Rents soared last year."],
+  "soar":["猛涨","Prices soar every summer."]
 };
 const FIG_PHRASES = Object.keys(FIG).filter(k=>k.includes(" "))
   .sort((a,b)=>b.split(" ").length - a.split(" ").length);
 
-/* 高阶后缀：不在高频表里、且带这些后缀 → 判为 t3，否则 t2 */
+/* 高阶后缀：不在高频表里、且带这些后缀 → 判为 t3，否则 t2（仅用于统计与点开后的标签） */
 const HARD_SUF = /(ism|ity|ous|ate|ise|ize|ation|ition|ence|ance|ancy|ency|itude|escent|aceous|ferous|ocracy|ology|arian)$/;
-
-
 
 /* 书面语 → 口语里会怎么说。key 为词形还原后的小写。 */
 const SPOKEN = {
@@ -730,7 +749,7 @@ hist.forEach(h=>{ if(h.done === undefined){ h.done = false; mig = true; } });
 if(mig){ save(LS.book,book); save(LS.hist,hist); }
 
 let tokens = [], curTitle = "", curHistId = null;
-let curIdx = -1, curSi = -1, mode = "word";
+let curIdx = -1, curSi = -1, lastWordIdx = -1;
 let calY, calM, selDay = null;
 let revQueue = [], revAt = 0, revShown = false, revStat = {yes:0,no:0};
 
@@ -748,7 +767,7 @@ const dayKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${d2(d
 const kindLab = k => k==="fig" ? "比喻／习语" : k==="rare" ? "生僻词" : "中等";
 
 /* =========================================================
-   难度判定
+   难度判定（不再影响高亮，只用于统计和点开后的标签）
    ========================================================= */
 function lemma(w){
   let s = w.toLowerCase().replace(/[’']s$/,"");
@@ -868,7 +887,7 @@ function rateOf(list){
 }
 
 /* =========================================================
-   渲染文章
+   渲染文章 —— 只给比喻／习语加标记
    ========================================================= */
 function render(){
   const savedW = new Set(book.map(e=>e.key));
@@ -888,8 +907,6 @@ function render(){
     if(tk.punct){ html += esc(tk.t); return; }
     const cls = ["w"];
     if(tk.fig) cls.push("fig");
-    else if(tk.tier===3) cls.push("t3");
-    else if(tk.tier===2) cls.push("t2");
     if(savedW.has(tk.fig || lemma(tk.t))) cls.push("saved");
     html += `<span class="${cls.join(" ")}" data-i="${i}">${esc(tk.t)}</span>`;
   });
@@ -897,8 +914,8 @@ function render(){
   $("artBody").innerHTML = html;
 }
 $("artBody").addEventListener("click", ev=>{
-  if(mode === "sent"){ const s = ev.target.closest(".s"); if(s) inspectSent(+s.dataset.s); }
-  else { const w = ev.target.closest(".w"); if(w) inspectWord(+w.dataset.i); }
+  const w = ev.target.closest(".w");
+  if(w) inspectWord(+w.dataset.i);
 });
 
 /* =========================================================
@@ -952,28 +969,52 @@ async function api(userText, system, maxTok){
   }
   return pick(await r.json());
 }
-function asJSON(t){
-  const s = t.replace(/```json/gi,"").replace(/```/g,"").trim();
-  const a = s.indexOf("{"), b = s.indexOf("[");
-  const from = (b>=0 && (a<0||b<a)) ? b : a;
-  return JSON.parse(from>0 ? s.slice(from) : s);
-}
 function apiGuard(err){
   if(err.message === "NOKEY"){ toast("还没填 API 密钥 —— 去设置页填一个。"); return; }
   if(/Failed to fetch|NetworkError|load failed/i.test(err.message)){
-    toast("请求发不出去。可能是网络不通，或浏览器拦了本地文件的跨域请求。", 6000); return;
+    toast("请求发不出去。检查网络，或确认这个页面是从 https 网址打开的（不是本地文件）。", 6000); return;
   }
   toast(esc(err.message), 5500);
 }
-const SYS_WORD = `你是帮中文母语者读《经济学人》的词汇助手。只输出 JSON 数组，不要任何前后文字或 markdown。
-每个元素：{"word":原词,"def":"中文释义，针对给定语境的那个义项，20字内","spoken":"英语口语里表达同一意思时会怎么说，1-2个地道说法","daily":"一个生活化英文例句，10词左右"}`;
-const SYS_SENT = `你是帮中文母语者读《经济学人》的句子助手。只输出 JSON 对象，不要任何前后文字或 markdown。
-格式：{"zh":"通顺的中文翻译","tpl":"把这句抽象成可复用的英文句型模板，用大写占位符代替具体内容","note":"一句话点出结构难点或值得学的地方，中文40字内"}`;
 
-const fillWords = async items => asJSON(await api(
+/* 一律不用 JSON —— 原文里的引号会把 JSON 结构撑破。改成行 + 竖线／标签，容错高得多。 */
+const SYS_WORD = `你是帮中文母语者读《经济学人》的词汇助手。
+对每个词输出一行，格式严格为：
+序号|中文释义|口语里怎么说|日常英文例句
+中文释义针对给定语境的那个义项，20字内；口语说法给1到2个地道表达；例句10词左右。
+只输出这些行。不要标题、不要解释、不要 markdown、不要用引号包裹整行。
+竖线只作分隔用，正文中若要引用请用「」，不要出现多余的竖线。`;
+
+const SYS_TRANS = `你把《经济学人》的英文句子翻译成通顺自然的中文。
+只输出译文本身：不要引号、不要注音、不要解释、不要任何前后缀。`;
+
+const SYS_SENT = `你是帮中文母语者读《经济学人》的句子助手。严格按下面三行输出，每行一条，不要多余文字：
+ZH: 通顺的中文翻译
+TPL: 把这句抽象成可复用的英文句型模板，用大写占位符代替具体内容
+NOTE: 一句话点出结构难点或值得学的地方，中文40字内`;
+
+function parseWords(txt){
+  const out = [];
+  String(txt).split(/\r?\n/).forEach(line=>{
+    const m = /^\s*(\d+)\s*[|｜]\s*(.*)$/.exec(line.trim());
+    if(!m) return;
+    const p = m[2].split(/[|｜]/);
+    out[+m[1]-1] = {def:(p[0]||"").trim(), spoken:(p[1]||"").trim(), daily:(p[2]||"").trim()};
+  });
+  return out;
+}
+function parseSent(txt){
+  const s = String(txt);
+  const g = k => { const m = new RegExp("^\\s*"+k+"\\s*[:：]\\s*(.+)$","mi").exec(s); return m ? m[1].trim() : ""; };
+  const r = {zh:g("ZH"), tpl:g("TPL"), note:g("NOTE")};
+  if(!r.zh && !r.tpl && !r.note) r.zh = s.trim();   /* 模型没守格式时，至少把原样内容交回去 */
+  return r;
+}
+const fillWords = async items => parseWords(await api(
   "请处理这些词：\n" + items.map((x,i)=>`${i+1}. ${x.word}\n语境：${x.quote}`).join("\n\n"),
   SYS_WORD, 300 + items.length*160));
-const readSent = async en => asJSON(await api(en, SYS_SENT, 900));
+const transSent = async en => String(await api(en, SYS_TRANS, 600)).trim();
+const readSent  = async en => parseSent(await api(en, SYS_SENT, 900));
 
 /* =========================================================
    侧栏：词
@@ -983,16 +1024,16 @@ const addTo  = (a,k)=>{ if(!a.includes(k)) a.push(k); };
 const rmFrom = (a,k)=>{ const j=a.indexOf(k); if(j>=0) a.splice(j,1); };
 
 function inspectWord(i){
-  curIdx = i; curSi = -1;
+  curIdx = i; curSi = -1; lastWordIdx = i;
   const tk = tokens[i], key = tk.fig || lemma(tk.t), s = sentenceOf(i);
   const e = book.find(x=>x.key===key);
   let tag, hint = "";
   if(tk.fig){
     tag = `<span class="insp-tag fig">比喻／习语</span>`;
     hint = `<div class="hintbox"><b>${esc(FIG[tk.fig][0])}</b><br><br>日常：${esc(FIG[tk.fig][1])}</div>`;
-  }else if(tk.tier===3) tag = `<span class="insp-tag t3">生僻词</span>`;
+  }else if(tk.tier===3) tag = `<span class="insp-tag t3">偏难</span>`;
   else if(tk.tier===2)  tag = `<span class="insp-tag t2">中等</span>`;
-  else                  tag = `<span class="insp-tag t0">未标记</span>`;
+  else                  tag = `<span class="insp-tag t0">常见词</span>`;
   const offSpk = SPOKEN[key] || "";
   const defVal = e ? e.def    : (tk.fig ? FIG[tk.fig][0] : "");
   const spkVal = e ? e.spoken : offSpk;
@@ -1033,13 +1074,16 @@ function inspectWord(i){
     </div>
     <div class="calib"><p class="sub">校准</p>
       <div class="actions">
-        <button class="mini" id="bKnow">我认识，别再标</button>
-        <button class="mini" id="bHard">我不认识，以后标</button>
-      </div></div>`;
+        <button class="mini" id="bKnow">我认识</button>
+        <button class="mini" id="bHard">我不认识</button>
+      </div>
+      <p style="font-size:11.5px;color:var(--ink-faint);line-height:1.5;margin:7px 0 0">
+        只影响首页的生词率统计，不影响页面标注。</p>
+    </div>`;
   $("bSpeak").onclick = ()=>speak(tk.t);
   $("bSave").onclick  = ()=>saveWord(i,key);
   $("bTrans").onclick = ()=>translateInto("zhBox", s.full);
-  $("bKeep").onclick  = ()=>{ mode="sent"; syncMode(); inspectSent(s.si); };
+  $("bKeep").onclick  = ()=>inspectSent(s.si);
   $("bAsk").onclick   = ()=>askOne(i);
   if($("bDel")) $("bDel").onclick = ()=>{ book = book.filter(x=>x.key!==key); persist(); inspectWord(i); };
   $("bKnow").onclick = ()=>{ addTo(known,key); rmFrom(flag,key); recalc(); };
@@ -1059,14 +1103,13 @@ async function askOne(i,quiet){
   const tk = tokens[i], s = sentenceOf(i), btn = $("bAsk");
   if(btn){ btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 查询中`; }
   try{
-    const out = await fillWords([{word:tk.t, quote:s.full}]);
-    const r = Array.isArray(out) ? out[0] : out;
-    if(r){
+    const r = (await fillWords([{word:tk.t, quote:s.full}]))[0];
+    if(r && (r.def || r.spoken || r.daily)){
       if($("fDef") && r.def)    $("fDef").value = r.def;
       if($("fSpk") && r.spoken) $("fSpk").value = r.spoken;
       if($("fUse") && r.daily)  $("fUse").value = r.daily;
       toast("填好了 —— 检查一下再点收藏。");
-    }
+    }else if(!quiet) toast("模型这次没按格式返回，再点一次试试。");
   }catch(err){ apiGuard(err); }
   finally{ if(btn){ btn.disabled = false; btn.innerHTML = "API 补释义"; } }
 }
@@ -1088,12 +1131,13 @@ function saveWord(i,key){
 }
 
 /* =========================================================
-   侧栏：句
+   侧栏：句（从词面板的「存进好句」进入）
    ========================================================= */
 function inspectSent(si){
   curSi = si; curIdx = -1;
   const en = sentText(si), e = sents.find(x=>x.en===en);
   $("insp").innerHTML = `
+    ${lastWordIdx>=0 ? `<button class="backw" id="bBackW">← 回到刚才那个词</button>` : ""}
     <p class="sub">句子</p>
     <div class="sent">${esc(en)}</div>
     <div class="actions" style="margin-bottom:12px">
@@ -1112,6 +1156,7 @@ function inspectSent(si){
       <button class="save" id="bKeepS">${e?"更新":"存进好句"}</button>
       ${e?`<button class="mini danger" id="bDelS">移出好句</button>`:""}
     </div>`;
+  if($("bBackW")) $("bBackW").onclick = ()=>inspectWord(lastWordIdx);
   $("bSpeakS").onclick = ()=>speak(en);
   $("bTransS").onclick = ()=>translateInto("zhBox", en, "sZh");
   $("bTplS").onclick   = ()=>analyseInto("zhBox", en);
@@ -1133,11 +1178,9 @@ async function translateInto(boxId, en, alsoField){
   const box = $(boxId); if(!box) return;
   box.innerHTML = `<div class="zh"><span class="spin"></span> 翻译中…</div>`;
   try{
-    const r = await readSent(en);
-    box.innerHTML = `<div class="zh">${esc(r.zh||"")}</div>` + (r.note?`<div class="hintbox">${esc(r.note)}</div>`:"");
-    if(alsoField && $(alsoField) && r.zh) $(alsoField).value = r.zh;
-    if($("sTpl")  && r.tpl  && !$("sTpl").value)  $("sTpl").value  = r.tpl;
-    if($("sNote") && r.note && !$("sNote").value) $("sNote").value = r.note;
+    const zh = await transSent(en);
+    box.innerHTML = zh ? `<div class="zh">${esc(zh)}</div>` : "";
+    if(alsoField && $(alsoField) && zh) $(alsoField).value = zh;
   }catch(err){ box.innerHTML=""; apiGuard(err); }
 }
 async function analyseInto(boxId, en){
@@ -1145,7 +1188,7 @@ async function analyseInto(boxId, en){
   box.innerHTML = `<div class="tpl"><span class="spin"></span> 分析中…</div>`;
   try{
     const r = await readSent(en);
-    box.innerHTML = `<div class="zh">${esc(r.zh||"")}</div>` +
+    box.innerHTML = (r.zh?`<div class="zh">${esc(r.zh)}</div>`:"") +
       (r.tpl?`<div class="tpl"><b>句型</b>　${esc(r.tpl)}</div>`:"") +
       (r.note?`<div class="hintbox">${esc(r.note)}</div>`:"");
     if($("sZh")   && r.zh   && !$("sZh").value) $("sZh").value = r.zh;
@@ -1225,7 +1268,7 @@ function drawTrend(){
   const pts = hist.filter(h=>typeof h.rate === "number")
                   .sort((a,b)=>a.added-b.added).slice(-24);
   if(pts.length < 2){
-    $("trendNote").textContent = "读满两篇之后，这里会画出你的生词率变化。每次点「我认识，别再标」，工具就更懂你一点，这条线应该慢慢往下走。";
+    $("trendNote").textContent = "读满两篇之后，这里会画出你的生词率变化。它按工具内部的难度判定来算，和页面上标不标高亮无关。";
     $("trendChart").innerHTML = ""; return;
   }
   const rs = pts.map(p=>p.rate), lo = Math.min(...rs), hi = Math.max(...rs);
@@ -1390,16 +1433,16 @@ async function batchFill(){
       const chunk = todo.slice(i,i+10);
       btn.innerHTML = `<span class="spin"></span> ${done}/${todo.length}`;
       const out = await fillWords(chunk.map(e=>({word:e.word, quote:e.contexts[0]?.quote||e.word})));
-      (Array.isArray(out)?out:[out]).forEach((r,j)=>{
-        const e = chunk[j]; if(!e||!r) return;
+      chunk.forEach((e,j)=>{
+        const r = out[j]; if(!e||!r) return;
         if(r.def) e.def = r.def;
         if(r.spoken && !e.spoken) e.spoken = r.spoken;
         if(r.daily && !e.use) e.use = r.daily;
-        done++;
+        if(r.def) done++;
       });
       save(LS.book,book);
     }
-    toast(`补好了 ${done} 个词。`);
+    toast(done ? `补好了 ${done} 个词。` : "模型这次没按格式返回，再点一次试试。");
   }catch(err){ apiGuard(err); }
   finally{ btn.disabled = false; btn.textContent = "批量补释义"; drawBook(); }
 }
@@ -1408,7 +1451,7 @@ function drawSent(){
   const list = sents.filter(e=>!q || (e.en+e.zh+e.tpl+e.note+e.title).toLowerCase().includes(q));
   if(!list.length){
     $("cardsSent").innerHTML = `<p class="empty" style="text-align:center;padding:40px 0">${
-      sents.length?"没有符合条件的句子。":"还没存过句子。阅读时切到「句子模式」，点句子就能存。"}</p>`; return;
+      sents.length?"没有符合条件的句子。":"还没存过句子。阅读时点句中任意一个词，右栏里就有「存进好句」。"}</p>`; return;
   }
   $("cardsSent").innerHTML = list.map(e=>`<div class="card">
     <p class="en">${esc(e.en)}</p>
@@ -1464,16 +1507,12 @@ function startReading(title, text, id){
   $("artTitle").textContent = title || "未命名文章";
   $("artTitle").style.display = title ? "" : "none";
   tokens = tokenize(text);
+  lastWordIdx = -1; curIdx = -1; curSi = -1;
   const h = hist.find(x=>x.id === id);
   if(h && typeof h.rate !== "number"){ h.rate = rateOf(tokens); save(LS.hist,hist); }
-  render(); mode = "word"; syncMode();
-  $("insp").innerHTML = `<p class="empty">点任何一个词看释义，或切到「句子模式」翻译整句、收藏好句。</p>`;
+  render();
+  $("insp").innerHTML = `<p class="empty">点任何一个词：看它所在的整句、翻译、收藏。绿色下划线标的是比喻／习语用法 —— 那种你以为认识、其实不是字面义的词。</p>`;
   show("viewArticle"); window.scrollTo(0,0);
-}
-function syncMode(){
-  document.body.classList.toggle("smode", mode==="sent");
-  $("btnMode").setAttribute("aria-pressed", mode==="sent");
-  $("btnMode").textContent = mode==="sent" ? "词语模式" : "句子模式";
 }
 function finishReading(){
   const h = hist.find(x=>x.id === curHistId);
@@ -1484,7 +1523,7 @@ function finishReading(){
   $("justDone").innerHTML = `<div class="note" style="margin-bottom:14px">
     归档了 <b>${esc(h.title||"未命名文章")}</b> —— 收了 <b>${nw}</b> 个词、<b>${ns}</b> 个句子${
     typeof h.rate==="number"?`，生词率 <b>${h.rate}%</b>`:""}。</div>`;
-  tokens = []; curHistId = null; curTitle = "";
+  tokens = []; curHistId = null; curTitle = ""; lastWordIdx = -1;
   selDay = dayKey(Date.now());
   show("viewHome"); drawHome(); window.scrollTo(0,0);
 }
@@ -1512,7 +1551,7 @@ function exportSentCsv(){
   dl(`好句-${today()}.csv`, "\uFEFF"+[head.map(cell).join(","),...rows].join("\n"), "text/csv");
 }
 const backup = all => dl(`读刊备份-${today()}.json`,
-  JSON.stringify({v:3, exported:new Date().toISOString(), book, known, flag, sents, hist: all?hist:[]}, null, 2),
+  JSON.stringify({v:4, exported:new Date().toISOString(), book, known, flag, sents, hist: all?hist:[]}, null, 2),
   "application/json");
 
 /* =========================================================
@@ -1547,8 +1586,6 @@ $("btnRead").onclick = ()=>{
 $("btnSample").onclick = ()=>{ $("tTitle").value = "China's microdrama boom"; $("tBody").value = SAMPLE; $("btnRead").click(); };
 $("btnSwap").onclick   = ()=>show("viewInput");
 $("btnFinish").onclick = finishReading;
-$("btnMode").onclick   = ()=>{ mode = mode==="word"?"sent":"word"; syncMode();
-  $("insp").innerHTML = `<p class="empty">${mode==="sent"?"点任意句子：翻译、看句型、存进好句。":"点任意词看释义。"}</p>`; };
 $("btnSheetClose").onclick = ()=>{ $("side").classList.remove("open"); $("btnSheetClose").hidden = true; };
 
 $("tabHome").onclick = ()=>{ show("viewHome"); drawHome(); };
