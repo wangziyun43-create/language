@@ -205,6 +205,24 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--figur);outline-o
 label.ck{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.5;cursor:pointer}
 label.ck input{width:auto;margin-top:2px}
 
+/* ---------- 短语 ---------- */
+.article .ph{border-bottom:1.5px dashed var(--saved);border-radius:0}
+#selBtn{position:fixed;z-index:60;transform:translate(-50%,0);background:var(--ink);color:var(--paper);
+  border:none;border-radius:3px;padding:8px 14px;font-size:13px;font-weight:600;
+  box-shadow:0 3px 12px rgba(0,0,0,.28);white-space:nowrap}
+#selBtn[hidden]{display:none}
+.insp-tag.ph{background:var(--saved);color:#fff}
+
+/* ---------- 总结 ---------- */
+.sumh{display:flex;align-items:baseline;gap:6px;margin:0 0 5px}
+.sumh .sub{margin:0}
+.sumh button{margin-left:auto}
+.sumen{font-family:var(--serif);font-size:15px;line-height:1.62;background:var(--paper);
+  border-left:2px solid var(--rule);padding:11px 13px;margin-bottom:12px}
+.sumen.plain{border-left-color:var(--figur);background:#EDF2F1}
+.sumzh{font-size:13.5px;line-height:1.65;background:#F3F0E7;border:1px dashed var(--rule);
+  padding:10px 12px;margin-bottom:12px;border-radius:2px}
+
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140%);
   background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:2px;font-size:13px;
   z-index:80;transition:transform .2s ease;max-width:86vw;line-height:1.5}
@@ -234,7 +252,7 @@ label.ck input{width:auto;margin-top:2px}
 <body>
 
 <div class="top">
-  <div class="brand">Language <em>·</em> Learning <span class="ver">v4</span></div>
+  <div class="brand">Language <em>·</em> Learning <span class="ver">v5</span></div>
   <div class="tabs">
     <button class="tab" id="tabHome" aria-selected="true">首页</button>
     <button class="tab" id="tabRead" aria-selected="false">阅读</button>
@@ -296,8 +314,9 @@ label.ck input{width:auto;margin-top:2px}
     <!-- 文章 -->
     <section class="view" id="viewArticle" hidden>
       <div class="bar">
-        <span><span class="chip c">sputtering</span> 只标比喻／习语用法，其余的词直接点</span>
+        <span><span class="chip c">sputtering</span> 只标比喻／习语；划选一段文字可查短语</span>
         <span style="margin-left:auto"></span>
+        <button class="ghost" id="btnSum">全文总结</button>
         <button class="ghost" id="btnSwap">换一篇</button>
         <button class="ghost" id="btnFinish">读完归档</button>
       </div>
@@ -323,6 +342,7 @@ label.ck input{width:auto;margin-top:2px}
           <option value="active">未掌握</option>
           <option value="all">全部</option>
           <option value="done">已掌握</option>
+          <option value="phrase">只看短语</option>
         </select>
         <button class="ghost" id="btnFill">批量补释义</button>
         <button class="ghost" id="btnExpJson">导出 JSON</button>
@@ -400,8 +420,8 @@ label.ck input{width:auto;margin-top:2px}
         </div>
         <div class="setblock">
           <h3>版本</h3>
-          <p style="margin-top:0"><b>v4</b> —— 只标比喻／习语；句子模式并入词语面板；翻译与释义不再走 JSON，避开引号解析报错。</p>
-          <p>如果这里显示的版本号不是你刚传上去的那个，说明浏览器读的是缓存。在网址后面加一个 <b>?v=4</b> 重新打开，或者下拉强制刷新。</p>
+          <p style="margin-top:0"><b>v5</b> —— 新增短语查询与收藏（在文章里划选文字即可），新增全文总结（书面版英文、口语版英文、中文要点，生成一次后随文章缓存）。</p>
+          <p>如果这里显示的版本号不是你刚传上去的那个，说明浏览器读的是缓存。在网址后面加一个 <b>?v=5</b> 重新打开，或者下拉强制刷新。</p>
         </div>
       </div>
     </section>
@@ -411,15 +431,16 @@ label.ck input{width:auto;margin-top:2px}
   <aside class="side" id="side">
     <button class="ghost sheet-close" id="btnSheetClose" hidden>关闭</button>
     <div class="insp" id="insp">
-      <p class="empty">点文章里任何一个词，这里会显示它所在的整句、口语里怎么说，以及收藏按钮。</p>
+      <p class="empty">点文章里任何一个词，这里会显示它所在的整句、口语里怎么说，以及收藏按钮。划选一小段文字，可以整条短语一起查。</p>
     </div>
   </aside>
 </div>
 
+<button id="selBtn" hidden>查短语</button>
 <div id="toast"></div>
 
 <script>
-const VER = "v4";
+const VER = "v5";
 
 /* 高频词：不标记。约 1900 词。 */
 const COMMON = `a about above accept across act action add address admit adult advice affect afraid after again against age ago agree ahead air all allow almost alone along already also although always among amount and anger angry animal another answer any anyone anything appear apple apply approach area argue arm around arrive art as ask asleep at attack attempt attend attention author available avoid away baby back bad bag ball bank bar base basic be beach bear beat beautiful because become bed before begin behind believe bell belong below beside best better between beyond big bill bird birth bit bite black blame blank blind block blood blow blue board boat body boil bone book boot border bore born borrow boss both bother bottle bottom box boy brain branch brave bread break breakfast breath bridge bright bring broad brother brown brush build burn bus business busy but buy by cake call calm camera camp can cancel cancer candidate cap capital car card care career careful carry case cash cat catch cause ceiling cell centre center century certain chain chair chance change character charge chart cheap check cheese chest chicken chief child choice choose church circle city claim class clean clear clever climb clock close cloth cloud club coach coast coat code coffee cold collect college colour color come comfort command comment common company compare complete computer concern condition confirm connect consider contain continue control cook cool copy corner correct cost could count country couple course court cover cow crash cream create credit crime cross crowd cry cup current cut dance danger dark date daughter day dead deal dear death debate debt decade decide deep degree delay deliver demand deny depend describe design desire desk despite detail develop die diet differ difficult dinner direct dirty discuss disease dish distance divide do doctor dog dollar door double doubt down draw dream dress drink drive drop drug dry due during dust duty each ear early earn earth ease east easy eat edge education effect effort egg eight either else empty end enemy energy engine enjoy enough enter entire equal escape especially even evening event ever every evidence exact example except exchange exist expect expense experience explain express extra eye face fact factor fail fair fall false family famous far farm fashion fast fat father fault favour favor fear feed feel few field fight figure file fill film final find fine finger finish fire firm first fish fit five fix flat floor flow flower fly focus follow food foot for force foreign forest forget form former forward four free fresh friend from front fruit full fun function fund funny future gain game garden gas gate gather general gentle get gift girl give glad glass go goal god gold good govern grade grand grass great green grey gray ground group grow guard guess guest guide gun guy habit hair half hall hand hang happen happy hard hat hate have he head health hear heart heat heavy height hell hello help her here hero hers herself hide high hill him himself hire his history hit hold hole holiday home honest hope horse hospital hot hotel hour house how however huge human hundred hungry hunt hurry hurt husband i ice idea identify if ill image imagine impact important improve in inch include income increase indeed index indicate industry inform inside instead intend interest into introduce invest invite involve iron island issue it item its itself job join joke journey joy judge jump just keep key kick kid kill kind king kiss kitchen knee knife knock know lack lady lake land language large last late laugh law lay lead leaf learn least leave left leg legal lend length less lesson let letter level library lie life lift light like likely limit line link lip list listen little live load local lock long look lose loss lot loud love low luck lunch machine mad magazine mail main major make male man manage many map mark market marry mass master match material matter may maybe me meal mean meaning measure meat media medical meet member memory mention menu message metal method middle might mile milk million mind mine minister minute miss mistake mix model modern moment money month moon moral more morning most mother motor mountain mouth move movie much music must my myself name narrow nation natural nature near nearly necessary neck need neighbour neighbor neither nervous net never new news next nice night nine no noise none nor normal north nose not note nothing notice now number nurse object obtain obvious occur ocean of off offer office officer official often oh oil old on once one only onto open operate opinion oppose option or orange order ordinary organ other our ours ourselves out outside over own pack page pain paint pair palace paper parent park part particular partner party pass past path patient pattern pay peace pen people per percent perfect perform perhaps period permit person phone photo pick picture piece place plan plane plant plastic plate play please pleasure plenty plus pocket point police policy politics poor popular port position possible post pot potato pound pour power practice practise prefer prepare present president press pressure pretty prevent previous price pride primary prime print prison private prize probably problem produce product profit program progress project promise proper protect proud prove provide public pull purchase pure purpose push put quality quarter queen question quick quiet quite race radio rail rain raise range rare rate rather reach read ready real reason receive recent recognise recognize record red reduce refer reflect refuse regard region regular relate release relief remain remember remind remove repeat replace reply report represent request require research respect respond rest result return reveal rich ride right ring rise risk river road rock role roll roof room root round row rule run rush safe sail salary sale salt same sand save say scale scene school science score sea search season seat second secret secretary section secure see seed seek seem select sell send sense sentence separate series serious serve service set settle seven several sex shake shall shape share sharp she sheet shelf shift shine ship shirt shock shoe shoot shop short should shoulder shout show shut sick side sight sign signal silence silver similar simple since sing single sink sir sister sit site situation six size skill skin sky sleep slight slip slow small smart smell smile smoke snow so social society soft soil soldier solve some someone something sometimes son song soon sorry sort soul sound soup source south space speak special speed spend spirit split sport spot spread spring square staff stage stair stand standard star start state station stay steal steel step stick still stock stomach stone stop store storm story straight strange street strength stress stretch strike strong structure student study stuff stupid style subject succeed such sudden suffer sugar suggest suit summer sun supply support suppose sure surface surprise survey survive sweet swim switch system table take talk tall tape task taste tax tea teach team tear technology telephone tell temperature ten tend term terrible test than thank that the their theirs them theme themselves then theory there therefore these they thick thin thing think third thirty this those though thought thousand threat three throat through throw thus ticket tie tight time tiny tip tire title to today together tomorrow tone tongue tonight too tool tooth top total touch tough tour toward town trade tradition traffic train transfer transport travel treat tree trial trip trouble true trust truth try turn twenty twice two type typical ugly uncle under understand union unit unite universe university unless until up upon upper urban us use useful usual value van variety various vast vegetable version very victim victory video view village visit voice volume vote wage wait wake walk wall want war warm warn wash waste watch water wave way we weak wealth weapon wear weather week weight welcome well west wet what when where whether which while white who whole whom whose why wide wife wild will win wind window wine wing winner winter wire wise wish with within without woman wonder wood word work world worry worse worth would wound write wrong yard year yellow yes yesterday yet you young your yours yourself youth`
@@ -764,7 +785,7 @@ const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>
 const d2 = n => String(n).padStart(2,"0");
 const fmt = ts => { const d = new Date(ts); return `${d.getFullYear()}.${d2(d.getMonth()+1)}.${d2(d.getDate())}`; };
 const dayKey = ts => { const d = new Date(ts); return `${d.getFullYear()}-${d2(d.getMonth()+1)}-${d2(d.getDate())}`; };
-const kindLab = k => k==="fig" ? "比喻／习语" : k==="rare" ? "生僻词" : "中等";
+const kindLab = k => k==="fig" ? "比喻／习语" : k==="phrase" ? "短语" : k==="rare" ? "生僻词" : "中等";
 
 /* =========================================================
    难度判定（不再影响高亮，只用于统计和点开后的标签）
@@ -889,12 +910,40 @@ function rateOf(list){
 /* =========================================================
    渲染文章 —— 只给比喻／习语加标记
    ========================================================= */
+const normPh = t => String(t).toLowerCase().replace(/\s+/g," ").trim();
+
+/* 已收藏的短语在文章里连成一段标出来。返回 起始索引 -> 结束索引。 */
+function phraseRuns(){
+  const runs = new Map();
+  const list = book.filter(e=>e.kind==="phrase").map(e=>e.key).filter(Boolean);
+  if(!list.length) return runs;
+  const maxLen = Math.max(...list.map(x=>x.length));
+  const set = new Set(list);
+  let taken = -1;
+  for(let i=0;i<tokens.length;i++){
+    const tk = tokens[i];
+    if(tk.br || tk.punct || i<=taken) continue;
+    let buf = "";
+    for(let j=i;j<tokens.length;j++){
+      const t2 = tokens[j];
+      if(t2.br || t2.si!==tk.si) break;
+      buf += t2.t;
+      if(buf.length > maxLen+2) break;
+      if(t2.punct) continue;
+      if(set.has(normPh(buf))){ runs.set(i,j); taken = j; break; }
+    }
+  }
+  return runs;
+}
+
 function render(){
+  const runs = phraseRuns();
   const savedW = new Set(book.map(e=>e.key));
   const savedS = new Set(sents.map(e=>e.en));
   const stext = {};
   tokens.forEach(tk=>{ if(!tk.br && stext[tk.si]===undefined) stext[tk.si]=null; });
   Object.keys(stext).forEach(k=>{ stext[k] = sentText(+k); });
+  const phEnd = new Set([...runs.values()]);
   let html = "<p>", openSi = null;
   const closeS = ()=>{ if(openSi!==null){ html += "</span>"; openSi = null; } };
   tokens.forEach((tk,i)=>{
@@ -904,16 +953,22 @@ function render(){
       html += `<span class="s${savedS.has(stext[tk.si])?" skept":""}" data-s="${tk.si}">`;
       openSi = tk.si;
     }
-    if(tk.punct){ html += esc(tk.t); return; }
-    const cls = ["w"];
-    if(tk.fig) cls.push("fig");
-    if(savedW.has(tk.fig || lemma(tk.t))) cls.push("saved");
-    html += `<span class="${cls.join(" ")}" data-i="${i}">${esc(tk.t)}</span>`;
+    if(runs.has(i)) html += `<span class="ph">`;
+    if(tk.punct){ html += esc(tk.t); }
+    else{
+      const cls = ["w"];
+      if(tk.fig) cls.push("fig");
+      if(savedW.has(tk.fig || lemma(tk.t))) cls.push("saved");
+      html += `<span class="${cls.join(" ")}" data-i="${i}">${esc(tk.t)}</span>`;
+    }
+    if(phEnd.has(i)) html += `</span>`;
   });
   closeS(); html += "</p>";
   $("artBody").innerHTML = html;
 }
 $("artBody").addEventListener("click", ev=>{
+  const sel = window.getSelection();
+  if(sel && !sel.isCollapsed && String(sel).trim().length > 1) return;  /* 正在划选短语，别抢面板 */
   const w = ev.target.closest(".w");
   if(w) inspectWord(+w.dataset.i);
 });
@@ -979,7 +1034,8 @@ function apiGuard(err){
 
 /* 一律不用 JSON —— 原文里的引号会把 JSON 结构撑破。改成行 + 竖线／标签，容错高得多。 */
 const SYS_WORD = `你是帮中文母语者读《经济学人》的词汇助手。
-对每个词输出一行，格式严格为：
+每一条可能是一个单词，也可能是一个短语（几个词的固定搭配）。短语要整体解释，不要逐词拆开。
+对每一条输出一行，格式严格为：
 序号|中文释义|口语里怎么说|日常英文例句
 中文释义针对给定语境的那个义项，20字内；口语说法给1到2个地道表达；例句10词左右。
 只输出这些行。不要标题、不要解释、不要 markdown、不要用引号包裹整行。
@@ -992,6 +1048,11 @@ const SYS_SENT = `你是帮中文母语者读《经济学人》的句子助手�
 ZH: 通顺的中文翻译
 TPL: 把这句抽象成可复用的英文句型模板，用大写占位符代替具体内容
 NOTE: 一句话点出结构难点或值得学的地方，中文40字内`;
+
+const SYS_SUM = `你帮中文母语者消化一篇《经济学人》文章。严格按下面三行输出，每行一条，不要多余文字、不要 markdown：
+FORMAL: 用贴近原文语域的英文写一段，概括全文核心论点，60到80词，一个自然段
+PLAIN: 同样的意思换成日常口语英文，像跟朋友解释一样，50到70词，一个自然段，可以用缩写和常见口语搭配
+ZH: 用中文一段话说清这篇在讲什么、想传达的判断是什么，80到120字`;
 
 function parseWords(txt){
   const out = [];
@@ -1198,6 +1259,184 @@ async function analyseInto(boxId, en){
 }
 
 /* =========================================================
+   短语：划选文字 → 浮出按钮 → 侧栏面板
+   ========================================================= */
+let pendSel = null, selTimer = null;
+
+function siOfNode(node){
+  let el = node && (node.nodeType===1 ? node : node.parentElement);
+  while(el && el !== document.body){
+    if(el.dataset && el.dataset.s !== undefined) return +el.dataset.s;
+    el = el.parentElement;
+  }
+  return -1;
+}
+function cleanPhrase(t){
+  return String(t).replace(/\s+/g," ").trim()
+    .replace(/^[^A-Za-z0-9$£€]+/,"").replace(/[^A-Za-z0-9%)\]]+$/,"").trim();
+}
+function hideSelBtn(){ $("selBtn").hidden = true; pendSel = null; }
+function onSelChange(){
+  if($("viewArticle").hidden) return hideSelBtn();
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed || !sel.rangeCount) return hideSelBtn();
+  const art = $("artBody");
+  if(!art.contains(sel.anchorNode) || !art.contains(sel.focusNode)) return hideSelBtn();
+  const txt = cleanPhrase(sel.toString());
+  const nw = txt.split(/\s+/).filter(Boolean).length;
+  if(!txt || nw < 2 || nw > 12 || txt.length > 140 || !/[A-Za-z]/.test(txt)) return hideSelBtn();
+  const r = sel.getRangeAt(0).getBoundingClientRect();
+  if(!r.width && !r.height) return hideSelBtn();
+  const b = $("selBtn");
+  b.hidden = false;
+  const bw = b.offsetWidth || 96;
+  b.style.left = Math.min(Math.max(r.left + r.width/2, bw/2 + 8), window.innerWidth - bw/2 - 8) + "px";
+  b.style.top  = (r.top > 56 ? r.top - 44 : r.bottom + 12) + "px";
+  pendSel = {text:txt, si:siOfNode(sel.anchorNode)};
+}
+document.addEventListener("selectionchange", ()=>{
+  clearTimeout(selTimer); selTimer = setTimeout(onSelChange, 160);
+});
+window.addEventListener("scroll", ()=>{ if(!$("selBtn").hidden) onSelChange(); }, {passive:true});
+$("selBtn").onclick = ()=>{
+  if(!pendSel) return;
+  const p = pendSel;
+  hideSelBtn();
+  try{ window.getSelection().removeAllRanges(); }catch(e){}
+  inspectPhrase(p.text, p.si);
+};
+
+function inspectPhrase(text, si){
+  curIdx = -1; curSi = -1;
+  const key = normPh(text);
+  const quote = si >= 0 ? sentText(si) : text;
+  const e = book.find(x=>x.key===key);
+  let seen = "";
+  if(e){
+    const others = e.contexts.filter(c=>c.quote !== quote);
+    if(others.length) seen = `<div class="seen">你在 ${e.contexts.length} 处见过它</div>` +
+      others.slice(-3).map(c=>`<div class="ctx">${esc(c.quote)}<em>${esc(c.title)}</em></div>`).join("");
+  }
+  let sentHtml = esc(quote);
+  if(si >= 0 && quote.includes(text)) sentHtml = sentHtml.replace(esc(text), `<b>${esc(text)}</b>`);
+  $("insp").innerHTML = `
+    <h2 class="insp-word" style="font-size:22px">${esc(text)}</h2>
+    <div class="insp-lemma">${text.split(/\s+/).length} 个词</div>
+    <span class="insp-tag ph">短语</span>
+    <div class="actions" style="margin-bottom:12px">
+      <button class="mini" id="pSpeak">🔊 朗读</button>
+      <button class="mini" id="pAsk">API 查短语</button>
+    </div>
+    <p class="sub">原文语境</p>
+    <div class="sent">${sentHtml}</div>
+    <div class="actions" style="margin:-6px 0 14px">
+      <button class="mini" id="pTrans">翻译这句</button>
+      ${si>=0?`<button class="mini" id="pKeep">存进好句</button>`:""}
+    </div>
+    <div id="zhBox"></div>
+    ${seen}
+    <p class="sub">整条意思</p>
+    <textarea id="pDef" placeholder="这个搭配整体是什么意思">${esc(e?e.def:"")}</textarea>
+    <p class="sub">口语里怎么说</p>
+    <textarea id="pSpk" placeholder="日常会换成什么说法">${esc(e?e.spoken:"")}</textarea>
+    <p class="sub">日常例句</p>
+    <textarea id="pUse" placeholder="一个用得上的句子">${esc(e?e.use:"")}</textarea>
+    <div class="actions">
+      <button class="save" id="pSave">${e?"更新收藏":"收藏短语"}</button>
+      ${e?`<button class="mini danger" id="pDel">移出生词本</button>`:""}
+    </div>`;
+  $("pSpeak").onclick = ()=>speak(text);
+  $("pTrans").onclick = ()=>translateInto("zhBox", quote);
+  $("pAsk").onclick   = ()=>askPhrase(text, quote);
+  if($("pKeep")) $("pKeep").onclick = ()=>inspectSent(si);
+  $("pSave").onclick  = ()=>savePhrase(text, key, quote, si);
+  if($("pDel")) $("pDel").onclick = ()=>{
+    book = book.filter(x=>x.key!==key); persist(); inspectPhrase(text, si); };
+  document.querySelectorAll(".w.sel,.s.ssel").forEach(x=>x.classList.remove("sel","ssel"));
+  openSheet();
+}
+async function askPhrase(text, quote){
+  if(!cfg.key){ toast("先去设置页填密钥。"); return; }
+  const btn = $("pAsk");
+  if(btn){ btn.disabled = true; btn.innerHTML = `<span class="spin"></span> 查询中`; }
+  try{
+    const r = (await fillWords([{word:text, quote}]))[0];
+    if(r && (r.def || r.spoken || r.daily)){
+      if($("pDef") && r.def)    $("pDef").value = r.def;
+      if($("pSpk") && r.spoken) $("pSpk").value = r.spoken;
+      if($("pUse") && r.daily)  $("pUse").value = r.daily;
+      toast("填好了 —— 检查一下再点收藏。");
+    }else toast("模型这次没按格式返回，再点一次试试。");
+  }catch(err){ apiGuard(err); }
+  finally{ if(btn){ btn.disabled = false; btn.innerHTML = "API 查短语"; } }
+}
+function savePhrase(text, key, quote, si){
+  const now = Date.now();
+  const ctx = {quote, target:text, title:curTitle||"（未命名）", added:now, hid:curHistId};
+  const def = $("pDef").value.trim(), spk = $("pSpk").value.trim(), use = $("pUse").value.trim();
+  let e = book.find(x=>x.key===key);
+  if(e){
+    e.def = def; e.spoken = spk; e.use = use;
+    if(!e.contexts.some(c=>c.quote===ctx.quote)){ e.contexts.push(ctx); toast("又见到它了 —— 例句已累积。"); }
+    else toast("已更新。");
+  }else{
+    book.unshift({key, word:text, kind:"phrase", def, spoken:spk, use,
+      contexts:[ctx], added:now, done:false, box:0, due:now, reviews:0});
+    toast("短语收藏了。");
+  }
+  persist();
+  inspectPhrase(text, si);
+}
+
+/* =========================================================
+   全文总结
+   ========================================================= */
+function parseSum(txt){
+  const s = String(txt);
+  const g = k => { const m = new RegExp("^\\s*"+k+"\\s*[:：]\\s*([\\s\\S]*?)(?=\\n\\s*(?:FORMAL|PLAIN|ZH)\\s*[:：]|$)","mi").exec(s);
+    return m ? m[1].replace(/\s+/g," ").trim() : ""; };
+  return {formal:g("FORMAL"), plain:g("PLAIN"), zh:g("ZH")};
+}
+function showSum(sum, cached){
+  $("insp").innerHTML = `
+    <h2 class="insp-word" style="font-size:22px">全文总结</h2>
+    <div class="insp-lemma">${esc(curTitle||"未命名文章")}</div>
+    ${!sum ? `<p class="empty">还没有生成。点下面的按钮，花一次 API 调用。</p>` : `
+    <div class="sumh"><p class="sub">书面版</p>
+      <button class="mini" id="sumSay1">🔊</button></div>
+    <div class="sumen">${esc(sum.formal||"")}</div>
+    <div class="sumh"><p class="sub">口语版</p>
+      <button class="mini" id="sumSay2">🔊</button></div>
+    <div class="sumen plain">${esc(sum.plain||"")}</div>
+    <p class="sub">中文要点</p>
+    <div class="sumzh">${esc(sum.zh||"")}</div>`}
+    <div class="actions">
+      <button class="${sum?"mini":"save"}" id="sumGo">${sum?"重新生成":"生成总结"}</button>
+    </div>
+    ${sum&&cached?`<p style="font-size:11.5px;color:var(--ink-faint);margin:9px 0 0;line-height:1.5">
+      已随这篇文章存下来，再打开不会重复花钱。</p>`:""}`;
+  if($("sumSay1")) $("sumSay1").onclick = ()=>speak(sum.formal||"");
+  if($("sumSay2")) $("sumSay2").onclick = ()=>speak(sum.plain||"");
+  $("sumGo").onclick = ()=>makeSum(true);
+}
+async function makeSum(force){
+  if(!tokens.length){ toast("先打开一篇文章。"); return; }
+  const h = hist.find(x=>x.id === curHistId);
+  if(!force && h && h.sum && h.sum.formal){ curIdx=-1; curSi=-1; showSum(h.sum, true); openSheet(); return; }
+  if(!cfg.key){ curIdx=-1; curSi=-1; showSum(h&&h.sum?h.sum:null, true); openSheet(); toast("先去设置页填密钥。"); return; }
+  curIdx = -1; curSi = -1; openSheet();
+  $("insp").innerHTML = `<h2 class="insp-word" style="font-size:22px">全文总结</h2>
+    <p class="empty"><span class="spin"></span> 正在读全文…长文章要十几秒。</p>`;
+  const text = h ? h.text : tokens.filter(t=>!t.br).map(t=>t.t).join("");
+  try{
+    const sum = parseSum(await api(text.slice(0,14000), SYS_SUM, 900));
+    if(!sum.formal && !sum.plain && !sum.zh){ toast("模型这次没按格式返回，再点一次试试。"); showSum(null); return; }
+    if(h){ h.sum = sum; h.sumAt = Date.now(); save(LS.hist,hist); }
+    showSum(sum, !!h);
+  }catch(err){ showSum(h&&h.sum?h.sum:null, true); apiGuard(err); }
+}
+
+/* =========================================================
    首页：日历 + 趋势 + 统计
    ========================================================= */
 function dueList(){ const n = Date.now(); return book.filter(e=>!e.done && (e.due||0) <= n); }
@@ -1385,6 +1624,7 @@ function drawBook(){
   let list = book.slice();
   if(f==="active") list = list.filter(e=>!e.done);
   if(f==="done")   list = list.filter(e=>e.done);
+  if(f==="phrase") list = list.filter(e=>e.kind==="phrase");
   if(q) list = list.filter(e=>(e.word+e.def+e.spoken+e.use+
         e.contexts.map(c=>c.quote+c.title).join("")).toLowerCase().includes(q));
   const blanks = book.filter(e=>!e.def).length, n = $("bookNote");
@@ -1482,7 +1722,8 @@ function drawHist(){
     return `<div class="card">
       <h3 style="font-size:19px">${esc(e.title||"（未命名）")}</h3>
       <div class="meta">${e.done?"已读完":"在读"} · ${e.words} 词${
-        typeof e.rate==="number"?` · 生词率 ${e.rate}%`:""} · 收词 ${nw} · ${fmt(e.read)}</div>
+        typeof e.rate==="number"?` · 生词率 ${e.rate}%`:""} · 收词 ${nw}${
+        e.sum&&e.sum.formal?" · 有总结":""} · ${fmt(e.read)}</div>
       <div class="q" style="border:none;padding:0;margin-bottom:10px">${esc(e.text.slice(0,150))}…</div>
       <div class="actions">
         <button class="mini" data-open="${e.id}">${e.done?"重读":"继续读"}</button>
@@ -1511,7 +1752,7 @@ function startReading(title, text, id){
   const h = hist.find(x=>x.id === id);
   if(h && typeof h.rate !== "number"){ h.rate = rateOf(tokens); save(LS.hist,hist); }
   render();
-  $("insp").innerHTML = `<p class="empty">点任何一个词：看它所在的整句、翻译、收藏。绿色下划线标的是比喻／习语用法 —— 那种你以为认识、其实不是字面义的词。</p>`;
+  $("insp").innerHTML = `<p class="empty">点任何一个词：看它所在的整句、翻译、收藏。想查一整条搭配，直接划选那几个词。绿色下划线是比喻／习语用法，红色虚线是你已经收过的短语。</p>`;
   show("viewArticle"); window.scrollTo(0,0);
 }
 function finishReading(){
@@ -1565,6 +1806,7 @@ function show(v){
   Object.keys(TABMAP).forEach(t=>$(t).setAttribute("aria-selected", TABMAP[t].includes(v)));
   document.body.classList.toggle("noside", v !== "viewArticle");
   if(v !== "viewArticle"){ $("side").classList.remove("open"); $("btnSheetClose").hidden = true; }
+  if(v !== "viewArticle" && $("selBtn")) $("selBtn").hidden = true;
 }
 
 /* =========================================================
@@ -1585,6 +1827,7 @@ $("btnRead").onclick = ()=>{
 };
 $("btnSample").onclick = ()=>{ $("tTitle").value = "China's microdrama boom"; $("tBody").value = SAMPLE; $("btnRead").click(); };
 $("btnSwap").onclick   = ()=>show("viewInput");
+$("btnSum").onclick    = ()=>makeSum(false);
 $("btnFinish").onclick = finishReading;
 $("btnSheetClose").onclick = ()=>{ $("side").classList.remove("open"); $("btnSheetClose").hidden = true; };
 
